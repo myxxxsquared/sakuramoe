@@ -1,3 +1,39 @@
+<%@page import="sakuramoe.CookieReader"%>
+<%@page import="sakuramoe.User"%>
+<%@ page contentType="text/html; charset=utf-8" language="java"
+	errorPage=""%>
+	
+<%
+	boolean jump_to_home = false;
+	boolean show_alert = false;
+
+	if (session.getAttribute("user") == null) {
+		session.setAttribute("user", new User());
+	}
+	User user = (User) session.getAttribute("user");
+	if (user.isLogin()) {
+		jump_to_home = true;
+	} else {
+		if (request.getMethod().equals("POST")) {
+			String username = request.getParameter("username");
+			String password = request.getParameter("password");
+			String rememberme = request.getParameter("rememberme");
+			if (username != null && password != null) {
+				if (user.login(username, password)) {
+					if (rememberme != null && rememberme.equals("on")) {
+						String skey = user.createLoginSkey();
+						response.addCookie(new Cookie("autologin_userskey", skey));
+						response.addCookie(new Cookie("autologin_userid", Integer.toString(user.getUserId())));
+					}
+					jump_to_home = true;
+				} else {
+					show_alert = true;
+				}
+			}
+		}
+	}
+%>
+
 <!DOCTYPE html>
 <html lang="en">
 

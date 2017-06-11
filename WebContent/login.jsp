@@ -1,4 +1,64 @@
+<%@page import="sakuramoe.CookieReader"%>
+<%@page import="sakuramoe.User"%>
+<%@ page contentType="text/html; charset=utf-8" language="java"
+	errorPage=""%>
+
+<%
+	boolean jump_to_home = false;
+	boolean show_alert = false;
+
+	if (session.getAttribute("user") == null) {
+		session.setAttribute("user", new User());
+	}
+	User user = (User) session.getAttribute("user");
+	if (user.isLogin()) {
+		jump_to_home = true;
+	} else {
+		if (request.getMethod().equals("POST")) {
+			String username = request.getParameter("username");
+			String password = request.getParameter("password");
+			String rememberme = request.getParameter("rememberme");
+			if (username != null && password != null) {
+				if (user.login(username, password)) {
+					if (rememberme != null && rememberme.equals("on")) {
+						String skey = user.createLoginSkey();
+						response.addCookie(new Cookie("autologin_userskey", skey));
+						response.addCookie(new Cookie("autologin_userid", Integer.toString(user.getUserId())));
+					}
+					jump_to_home = true;
+				} else {
+					show_alert = true;
+				}
+			}
+		}
+
+		Cookie[] cookies = request.getCookies();
+		try {
+			String userSkey = CookieReader.readCookie(cookies, "autologin_userskey");
+			if (userSkey != null) {
+				int userId = Integer.parseInt(CookieReader.readCookie(cookies, "autologin_userid"));
+				if (user.loginSkey(userId, userSkey))
+					jump_to_home = true;
+			}
+		} catch (Exception e) {
+		}
+	}
+%>
+
 <!DOCTYPE html>
+
+<%
+	if (jump_to_home) {
+%>
+<html lang="en">
+<head>
+<meta http-equiv="refresh" content="0;url=/home.jsp">
+</head>
+</html>
+<%
+	} else {
+%>
+
 <html lang="en">
 
 <head>
@@ -30,7 +90,7 @@
 				<div class="card-group mb-0">
 					<div class="card p-4">
 						<div class="card-block">
-							<form method="post" action="action_login.jsp">
+							<form method="post" action="#">
 								<h1>Login</h1>
 								<p class="text-muted">Sign In to your account</p>
 								<div class="input-group mb-3">
@@ -43,12 +103,25 @@
 									</span> <input type="password" name="password" class="form-control"
 										placeholder="Password">
 								</div>
+								<%
+									if (show_alert) {
+								%>
+								<div class="row">
+									<div class="col-12">
+										<div class="alert alert-danger" role="alert">Permission
+											denied.</div>
+									</div>
+								</div>
+								<%
+									}
+								%>
 								<div class="row">
 									<div class="col-12">
 										Remember-me:&nbsp;&nbsp;&nbsp; <label
 											class="switch switch-default switch-primary"> <input
-											type="checkbox" class="switch-input" checked=""> <span
-											class="switch-label"></span> <span class="switch-handle"></span>
+											type="checkbox" class="switch-input" name="rememberme"
+											checked=""> <span class="switch-label"></span> <span
+											class="switch-handle"></span>
 										</label>
 									</div>
 								</div>
@@ -90,3 +163,7 @@
 </body>
 
 </html>
+
+<%
+	}
+%>

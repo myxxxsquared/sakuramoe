@@ -1,4 +1,17 @@
-﻿<!DOCTYPE html>
+﻿<%@page import="sakuramoe.User"%>
+<%@ page contentType="text/html; charset=utf-8" language="java"
+	errorPage=""%>
+
+<%
+	if (session.getAttribute("user") == null) {
+		session.setAttribute("user", new User());
+	}
+	User user = (User) session.getAttribute("user");
+	if (!user.isLogin()) {
+		response.sendRedirect("login.jsp");
+	}
+%>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
