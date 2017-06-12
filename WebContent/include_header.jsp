@@ -1,9 +1,11 @@
 ﻿<%@page import="sakuramoe.UserInfo"%>
 <%@page import="sakuramoe.User"%>
 <%@ page contentType="text/html; charset=utf-8" language="java"
-	errorPage=""%>
+	pageEncoding="UTF-8" errorPage=""%>
 
 <%
+	request.setCharacterEncoding("utf-8");
+
 	if (session.getAttribute("user") == null) {
 		session.setAttribute("user", new User());
 	}

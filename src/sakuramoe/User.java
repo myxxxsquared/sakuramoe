@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -340,18 +341,24 @@ public class User {
 		}
 	}
 
-	public static OperationResult register(String userName, String userEmail, String userPassword) {
+	public static OperationResult register(String userName, String userEmail, String userPassword, String ip) {
 		if (!UserInfoPattern.checkUserNameFormat(userName) || !UserInfoPattern.checkEmailFormat(userEmail)
 				|| !UserInfoPattern.checkPasswordFormat(userPassword))
 			return new OperationResult(null, false, "Invaild format of username, password or email");
 
 		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
 				PreparedStatement ps2 = dbconn.prepareStatement(
-						"INSERT INTO `user` (`userName`, `userEmail`, `userPassword`) VALUES (?, ?, ?)");) {
+						"INSERT INTO `user` (`userName`, `userEmail`, `userPassword`) VALUES (?, ?, ?)",Statement.RETURN_GENERATED_KEYS);) {
 			ps2.setString(1, userName);
 			ps2.setString(2, userEmail);
 			ps2.setBytes(3, PasswordSHA.passwordSHA(userPassword));
 			ps2.executeUpdate();
+			try(ResultSet key = ps2.getGeneratedKeys())
+			{
+				key.first();
+				int newkey = key.getInt(1);
+				WriteUserOperation(newkey, "Register", "Success", ip);
+			}
 		} catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException e) {
 			return new OperationResult(null, false, "User name already exists");
 		} catch (SQLException e) {

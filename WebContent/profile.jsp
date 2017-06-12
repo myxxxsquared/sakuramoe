@@ -1,6 +1,31 @@
 ﻿<%@ page contentType="text/html; charset=utf-8" language="java"
-	errorPage=""%>
+	errorPage="" pageEncoding="UTF-8"%>
 <%@include file="include_header.jsp"%>
+<%
+	if (user.isLogin()) {
+
+		UserInfo userinfo = user.getUserInfo();
+
+		if (request.getMethod().equals("POST")) {
+			String nickname = request.getParameter("nickname");
+			String gender = request.getParameter("gender");
+			String birthday = request.getParameter("birthday");
+			String intro = request.getParameter("intro");
+
+			if (nickname != null)
+				userinfo.setNickName(nickname);
+			if (gender != null)
+				try {
+					userinfo.setGender(Integer.parseInt(gender));
+				} catch (Exception e) {
+				}
+			if (birthday != null)
+				userinfo.setBirthday(birthday);
+			if (intro != null)
+				userinfo.setIntroduction(intro);
+		}
+%>
+
 <main class="main">
 <ol class="breadcrumb">
 	<li class="breadcrumb-item">Home</li>
@@ -12,64 +37,78 @@
 			<div class="col-12">
 				<div class="card">
 					<div class="card-header">Profile</div>
-					<div class="card-block">
-						<form action="" method="post" enctype="multipart/form-data"
-							class="form-horizontal">
+					<form action="#" method="post" class="form-horizontal">
+						<div class="card-block">
+
 							<div class="form-group row">
-								<label class="col-md-3 form-control-label" for="text-input">Profile
+								<label class="col-md-3 form-control-label">Profile
 									Picture </label>
 								<div class="col-md-9">
-									<img src="img/avatars/6.jpg" height="50em" class="img-avatar"
-										alt="admin@bootstrapmaster.com">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									<img src="<%out.print(userinfo.getAvatar());%>" height="50em"
+										class="img-avatar">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 									<button type="button" class="btn btn-secondary">Update</button>
 								</div>
 							</div>
 							<div class="form-group row">
-								<label class="col-md-3 form-control-label" for="text-input">Nick
+								<label class="col-md-3 form-control-label" for="nickname">Nick
 									Name</label>
 								<div class="col-md-9">
-									<input type="text" id="text-input" name="text-input"
-										class="form-control" placeholder="Text">
+									<input type="text" id="nickname" name="nickname"
+										class="form-control" placeholder="Text"
+										value="<%out.print(userinfo.getUserDesc());%>">
 								</div>
 							</div>
 							<div class="form-group row">
-								<label class="col-md-3 form-control-label" for="select">Gender</label>
+								<label class="col-md-3 form-control-label" for=gender">Gender</label>
 								<div class="col-md-9">
-									<select id="select" name="select" class="form-control">
-										<option value="0">Please select</option>
-										<option value="1">Male</option>
-										<option value="2">Female</option>
+									<select id="gender" name="gender" class="form-control">
+										<%
+											int gendar = userinfo.getGender();
+										%>
+										<option value="0"
+											<%if (gendar == 0)
+					out.print("selected=\"selected\"");%>>Please
+											select</option>
+										<option value="1"
+											<%if (gendar == 1)
+					out.print("selected=\"selected\"");%>>Male</option>
+										<option value="2"
+											<%if (gendar == 2)
+					out.print("selected=\"selected\"");%>>Female</option>
 									</select>
 								</div>
 							</div>
 							<div class="form-group row">
-								<label class="col-md-3 form-control-label" for="select">Birthday</label>
+								<label class="col-md-3 form-control-label" for="birthday">Birthday</label>
 								<div class="col-md-9">
-									<input type="date" id="text-input" name="text-input"
-										class="form-control" placeholder="Text">
+									<input type="date" id="birthday" name="birthday"
+										class="form-control" placeholder="Text"
+										value="<%out.print(userinfo.getBirthday());%>">
 								</div>
 							</div>
 							<div class="form-group row">
-								<label class="col-md-3 form-control-label" for="textarea-input">Introduction</label>
+								<label class="col-md-3 form-control-label" for="intro">Introduction</label>
 								<div class="col-md-9">
-									<textarea id="textarea-input" name="textarea-input" rows="9"
-										class="form-control" placeholder="Content.."></textarea>
+									<textarea id="intro" name="intro" rows="9" class="form-control"
+										placeholder="Content.."><%
+											out.print(userinfo.getIntroduction());
+										%></textarea>
 								</div>
 							</div>
-
-
-
-						</form>
-					</div>
-					<div class="card-footer">
-						<button type="submit" class="btn btn-sm btn-primary">
-							<i class="fa fa-dot-circle-o"></i> Submit
-						</button>
-					</div>
+						</div>
+						<div class="card-footer">
+							<button type="submit" class="btn btn-sm btn-primary">
+								<i class="fa fa-dot-circle-o"></i> Submit
+							</button>
+						</div>
+					</form>
 				</div>
 			</div>
 		</div>
 	</div>
 </div>
 </main>
+<%
+	}
+%>
 <%@include file="include_footer.jsp"%>

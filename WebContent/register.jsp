@@ -1,3 +1,4 @@
+<%@page import="sakuramoe.Tools"%>
 <%@page import="sakuramoe.User.OperationResult"%>
 <%@page import="sakuramoe.CookieReader"%>
 <%@page import="sakuramoe.User"%>
@@ -7,6 +8,7 @@
 <%
 	boolean jump_to_home = false;
 	String alert = null;
+	String ip = Tools.getRemortIP(request);
 
 	if (session.getAttribute("user") == null) {
 		session.setAttribute("user", new User());
@@ -23,9 +25,9 @@
 
 			if (username != null && password != null && password2 != null && email != null)
 				if (password.equals(password2)) {
-					OperationResult regresult = User.register(username, email, password);
+					OperationResult regresult = User.register(username, email, password, ip);
 					if (regresult.success) {
-						if (user.login(username, password).success)
+						if (user.login(username, password, ip).success)
 							jump_to_home = true;
 					} else
 						alert = regresult.reason;

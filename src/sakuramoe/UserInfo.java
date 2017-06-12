@@ -66,7 +66,7 @@ public class UserInfo {
 
 				} else {
 					try (PreparedStatement ps2 = dbconn.prepareStatement(
-							"INSERT INTO `usermeta` (`userMetaValue`, `userId`, `userMetaItem`) VALUES = (?, ?, ?)")) {
+							"INSERT INTO `usermeta` (`userMetaValue`, `userId`, `userMetaItem`) VALUES (?, ?, ?)")) {
 						ps2.setString(1, value);
 						ps2.setInt(2, userId);
 						ps2.setString(3, name);
@@ -86,6 +86,11 @@ public class UserInfo {
 		else
 			return userName;
 	}
+	
+	public void setNickName(String nick)
+	{
+		setAttribute("nick", nick);
+	}
 
 	public String getAvatar() {
 		String avatar = getAttribute("avatar");
@@ -93,5 +98,32 @@ public class UserInfo {
 			return "img/avatars/" + avatar + ".jpg";
 		else
 			return "img/avatars/0.jpg";
+	}
+
+	public void setGender(int gender) {
+		setAttribute("gender", Integer.toString(gender));
+	}
+
+	public int getGender() {
+		String gender = getAttribute("gender");
+		if (gender == null)
+			return 0;
+		return Integer.parseInt(gender);
+	}
+	
+	public String getBirthday(){
+		return getAttribute("birthday");
+	}
+	
+	public void setBirthday(String birthday){
+		setAttribute("birthday", birthday);
+	}
+	
+	public String getIntroduction(){
+		return getAttribute("intro");
+	}
+	
+	public void setIntroduction(String intro){
+		setAttribute("intro", intro);
 	}
 }
