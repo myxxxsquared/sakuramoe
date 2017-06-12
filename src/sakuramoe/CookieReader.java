@@ -8,7 +8,7 @@ public class CookieReader {
 			return null;
 
 		for (Cookie cookie : cookies) {
-			if (cookie.getName() == name)
+			if (cookie.getName().equals(name))
 				return cookie.getValue();
 		}
 		return null;

@@ -1,11 +1,12 @@
+<%@page import="sakuramoe.User.OperationResult"%>
 <%@page import="sakuramoe.CookieReader"%>
 <%@page import="sakuramoe.User"%>
 <%@ page contentType="text/html; charset=utf-8" language="java"
 	errorPage=""%>
-	
+
 <%
 	boolean jump_to_home = false;
-	boolean show_alert = false;
+	String alert = null;
 
 	if (session.getAttribute("user") == null) {
 		session.setAttribute("user", new User());
@@ -17,24 +18,38 @@
 		if (request.getMethod().equals("POST")) {
 			String username = request.getParameter("username");
 			String password = request.getParameter("password");
-			String rememberme = request.getParameter("rememberme");
-			if (username != null && password != null) {
-				if (user.login(username, password)) {
-					if (rememberme != null && rememberme.equals("on")) {
-						String skey = user.createLoginSkey();
-						response.addCookie(new Cookie("autologin_userskey", skey));
-						response.addCookie(new Cookie("autologin_userid", Integer.toString(user.getUserId())));
-					}
-					jump_to_home = true;
+			String password2 = request.getParameter("password2");
+			String email = request.getParameter("email");
+
+			if (username != null && password != null && password2 != null && email != null)
+				if (password.equals(password2)) {
+					OperationResult regresult = User.register(username, email, password);
+					if (regresult.success) {
+						if (user.login(username, password).success)
+							jump_to_home = true;
+					} else
+						alert = regresult.reason;
 				} else {
-					show_alert = true;
+					alert = "Difference between two passwords";
 				}
-			}
 		}
 	}
 %>
 
 <!DOCTYPE html>
+
+<%
+	if (jump_to_home) {
+%>
+<html lang="en">
+<head>
+<meta http-equiv="refresh" content="0;url=/home.jsp">
+</head>
+</html>
+<%
+	} else {
+%>
+
 <html lang="en">
 
 <head>
@@ -65,7 +80,7 @@
 			<div class="col-md-6">
 				<div class="card mx-4">
 					<div class="card-block p-4">
-						<form method="post" action="action_register.jsp">
+						<form method="post" action="#">
 							<h1>Register</h1>
 							<p class="text-muted">Create your account</p>
 							<div class="input-group mb-3">
@@ -91,6 +106,22 @@
 									placeholder="Repeat password">
 							</div>
 
+							<%
+								if (alert != null) {
+							%>
+							<div class="row">
+								<div class="col-12">
+									<div class="alert alert-danger" role="alert">
+										<%
+											out.print(alert);
+										%>
+									</div>
+								</div>
+							</div>
+							<%
+								}
+							%>
+
 							<button type="submit" class="btn btn-block btn-success">Create
 								Account</button>
 
@@ -113,3 +144,6 @@
 </body>
 
 </html>
+<%
+	}
+%>

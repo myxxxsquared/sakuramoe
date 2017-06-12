@@ -1,4 +1,5 @@
-﻿<%@page import="sakuramoe.User"%>
+﻿<%@page import="sakuramoe.UserInfo"%>
+<%@page import="sakuramoe.User"%>
 <%@ page contentType="text/html; charset=utf-8" language="java"
 	errorPage=""%>
 
@@ -9,7 +10,9 @@
 	User user = (User) session.getAttribute("user");
 	if (!user.isLogin()) {
 		response.sendRedirect("login.jsp");
-	}
+	} else {
+
+		UserInfo userinfo = user.getUserInfo();
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -57,15 +60,18 @@
 					<div class="dropdown-header text-center">
 						<strong>Notifications</strong>
 					</div>
-					<a class="dropdown-item" href="#"><img src="img/avatars/6.jpg"
-						width="50em" class="img-avatar" alt="admin@bootstrapmaster.com">
-						Bdmin reply you.</a>
+					<a class="dropdown-item" href="#"><img src="" width="50em"
+						class="img-avatar"> Bdmin reply you.</a>
 				</div></li>
 			<li class="nav-item dropdown"><a
 				class="nav-link dropdown-toggle nav-link" data-toggle="dropdown"
 				href="#" role="button" aria-haspopup="true" aria-expanded="false">
-					<img src="img/avatars/6.jpg" class="img-avatar"
-					alt="admin@bootstrapmaster.com"> <span class="d-md-down-none">admin</span>
+					<img src="<%out.print(userinfo.getAvatar());%>" class="img-avatar"
+					alt="admin@bootstrapmaster.com"> <span class="d-md-down-none">
+						<%
+							out.print(userinfo.getUserDesc());
+						%>
+				</span>
 			</a>
 				<div class="dropdown-menu dropdown-menu-right">
 					<div class="dropdown-header text-center">
@@ -106,3 +112,6 @@
 				</ul>
 			</nav>
 		</div>
+		<%
+			}
+		%>

@@ -1,3 +1,5 @@
+<%@page import="sakuramoe.Tools"%>
+<%@page import="sakuramoe.User.OperationResult"%>
 <%@page import="sakuramoe.CookieReader"%>
 <%@page import="sakuramoe.User"%>
 <%@ page contentType="text/html; charset=utf-8" language="java"
@@ -5,7 +7,8 @@
 
 <%
 	boolean jump_to_home = false;
-	boolean show_alert = false;
+	String alert = null;
+	String ip = Tools.getRemortIP(request);
 
 	if (session.getAttribute("user") == null) {
 		session.setAttribute("user", new User());
@@ -19,28 +22,32 @@
 			String password = request.getParameter("password");
 			String rememberme = request.getParameter("rememberme");
 			if (username != null && password != null) {
-				if (user.login(username, password)) {
+				OperationResult result = user.login(username, password, ip);
+				if (result.success) {
 					if (rememberme != null && rememberme.equals("on")) {
-						String skey = user.createLoginSkey();
+						String skey = user.createLoginSkey(ip);
 						response.addCookie(new Cookie("autologin_userskey", skey));
 						response.addCookie(new Cookie("autologin_userid", Integer.toString(user.getUserId())));
 					}
 					jump_to_home = true;
 				} else {
-					show_alert = true;
+					alert = result.reason;
 				}
 			}
 		}
 
-		Cookie[] cookies = request.getCookies();
-		try {
-			String userSkey = CookieReader.readCookie(cookies, "autologin_userskey");
-			if (userSkey != null) {
-				int userId = Integer.parseInt(CookieReader.readCookie(cookies, "autologin_userid"));
-				if (user.loginSkey(userId, userSkey))
-					jump_to_home = true;
+		if (!jump_to_home) {
+			Cookie[] cookies = request.getCookies();
+			try {
+				String userSkey = CookieReader.readCookie(cookies, "autologin_userskey");
+				if (userSkey != null) {
+					int userId = Integer.parseInt(CookieReader.readCookie(cookies, "autologin_userid"));
+					OperationResult result = user.loginSkey(userId, userSkey, ip);
+					if (result.success)
+						jump_to_home = true;
+				}
+			} catch (Exception e) {
 			}
-		} catch (Exception e) {
 		}
 	}
 %>
@@ -104,12 +111,15 @@
 										placeholder="Password">
 								</div>
 								<%
-									if (show_alert) {
+									if (alert != null) {
 								%>
 								<div class="row">
 									<div class="col-12">
-										<div class="alert alert-danger" role="alert">Permission
-											denied.</div>
+										<div class="alert alert-danger" role="alert">
+											<%
+												out.print(alert);
+											%>
+										</div>
 									</div>
 								</div>
 								<%
@@ -120,8 +130,8 @@
 										Remember-me:&nbsp;&nbsp;&nbsp; <label
 											class="switch switch-default switch-primary"> <input
 											type="checkbox" class="switch-input" name="rememberme"
-											checked=""> <span class="switch-label"></span> <span
-											class="switch-handle"></span>
+											checked="checked"> <span class="switch-label"></span>
+											<span class="switch-handle"></span>
 										</label>
 									</div>
 								</div>

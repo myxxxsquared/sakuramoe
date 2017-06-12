@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.regex.Pattern;
 
@@ -93,7 +94,7 @@ public class User {
 	}
 
 	private static class SkeyGenerator {
-		static final long SkeyTimeSpan = 604800l;
+		static final long SkeyTimeSpan = 604800000l;
 		static final SecureRandom secureRandom = new SecureRandom();
 		static final int skeyLength = 32;
 
@@ -133,7 +134,30 @@ public class User {
 		}
 	}
 
+	public static class OperationResult {
+		public boolean success;
+		public Object result;
+		public String reason;
+
+		OperationResult(Object result, boolean success, String reason) {
+			this.success = success;
+			this.result = result;
+			this.reason = reason;
+		}
+	}
+
 	private int userId;
+
+	private enum LoginMethod {
+		Username, Skey
+	}
+
+	private LoginMethod loginMethod;
+	private int skeyId;
+
+	public LoginMethod getLoginMethod() {
+		return loginMethod;
+	}
 
 	public int getUserId() {
 		return userId;
@@ -143,9 +167,9 @@ public class User {
 		userId = -1;
 	}
 
-	public boolean login(String userName, String password) {
+	public OperationResult login(String userName, String password, String ip) {
 		if (!UserInfoPattern.checkUserNameFormat(userName) || !UserInfoPattern.checkPasswordFormat(password))
-			return false;
+			return new OperationResult(null, false, "Invaild format of username or password");
 
 		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
 				PreparedStatement ps = dbconn.prepareStatement(
@@ -154,45 +178,81 @@ public class User {
 			ps.setBytes(2, PasswordSHA.passwordSHA(password));
 			try (ResultSet result = ps.executeQuery();) {
 				if (result.first()) {
-					userId = result.getInt(0);
-					return true;
+					userId = result.getInt(1);
+					loginMethod = LoginMethod.Username;
+					WriteUserOperation(userId, "Login", "Success", ip);
+					return new OperationResult(null, true, null);
 				}
-				return false;
+				int id = getUserIdByName(userName);
+				if (id != -1)
+					WriteUserOperation(id, "Login", "Error", ip);
+				return new OperationResult(null, false, "Invaild username or password");
 			}
 		} catch (SQLException e) {
-			throw new RuntimeException("Errors occurred when login", e);
+			if (DebugSign.DEBUG_SIGN)
+				throw new RuntimeException("Errors occurred when login", e);
+			else
+				return new OperationResult(null, false, "Internal server error");
 		}
 	}
 
-	public boolean loginSkey(int userId, String userSkey) {
+	public OperationResult loginSkey(int userId, String userSkey, String ip) {
 		if (userId < 0 || !UserInfoPattern.checkSkeyFormat(userSkey))
-			return false;
+			return new OperationResult(null, false, "Invaild format of userid or skey");
 
 		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
 				PreparedStatement ps = dbconn.prepareStatement(
-						"SELECT FROM `userskey` WHERE `userId`=? AND `userSkeyUseage`='login' AND `userSkeySkey` = ? AND `userSkeyExprie`>CURRENT_TIMESTAMP");) {
+						"SELECT `userSkeyId` FROM `userskey` WHERE `userId`=? AND `userSkeyUseage`='login' AND `userSkeySkey` = ? AND `userSkeyExprie`>CURRENT_TIMESTAMP");) {
 			ps.setInt(1, userId);
 			ps.setBytes(2, HexString.hexStringToBytes(userSkey));
 			try (ResultSet result = ps.executeQuery();) {
 				if (result.first()) {
 					this.userId = userId;
-					return true;
+					loginMethod = LoginMethod.Skey;
+					skeyId = result.getInt(1);
+					WriteUserOperation(userId, "Skey login", "Success", ip);
+					return new OperationResult(null, true, null);
 				}
-				return false;
+				try {
+					WriteUserOperation(userId, "Skey login", "Error", ip);
+				} catch (Exception e) {
+				}
+
+				return new OperationResult(null, false, "Skey expired");
 			}
 		} catch (SQLException e) {
-			throw new RuntimeException("Errors occurred when login with skeys", e);
+			if (DebugSign.DEBUG_SIGN)
+				throw new RuntimeException("Errors occurred when login with skeys", e);
+			else
+				return new OperationResult(null, false, "Internal server error");
 		}
 	}
 
-	public String createLoginSkey() {
+	public String createLoginSkey(String ip) {
 		if (userId == -1)
 			return null;
+
+		WriteUserOperation(userId, "Create skey", "Success", ip);
 
 		return SkeyGenerator.generateSkey(userId, "login");
 	}
 
-	public void logout() {
+	public void logout(String ip) {
+		if (userId == -1)
+			return;
+
+		WriteUserOperation(userId, "Logout", "Success", ip);
+
+		if (loginMethod == LoginMethod.Skey) {
+			try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
+					PreparedStatement ps = dbconn.prepareStatement("DELETE FROM `userskey` WHERE `userSkeyId` = ?");) {
+				ps.setInt(1, skeyId);
+				ps.executeUpdate();
+			} catch (SQLException e) {
+				if (DebugSign.DEBUG_SIGN)
+					e.printStackTrace();
+			}
+		}
 		userId = -1;
 	}
 
@@ -280,59 +340,93 @@ public class User {
 		}
 	}
 
-	public static boolean register(String userName, String userEmail, String userPassword) {
+	public static OperationResult register(String userName, String userEmail, String userPassword) {
 		if (!UserInfoPattern.checkUserNameFormat(userName) || !UserInfoPattern.checkEmailFormat(userEmail)
 				|| !UserInfoPattern.checkPasswordFormat(userPassword))
-			return false;
+			return new OperationResult(null, false, "Invaild format of username, password or email");
 
-		Connection dbconn = DatabaseConnector.GetDatabaseConnection();
-		try (PreparedStatement ps2 = dbconn
-				.prepareStatement("INSERT INTO `user` (`userName`, `userEmail`, `userPassword`)");) {
+		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
+				PreparedStatement ps2 = dbconn.prepareStatement(
+						"INSERT INTO `user` (`userName`, `userEmail`, `userPassword`) VALUES (?, ?, ?)");) {
 			ps2.setString(1, userName);
 			ps2.setString(2, userEmail);
 			ps2.setBytes(3, PasswordSHA.passwordSHA(userPassword));
 			ps2.executeUpdate();
+		} catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException e) {
+			return new OperationResult(null, false, "User name already exists");
 		} catch (SQLException e) {
-			throw new RuntimeException("Errors occurred when login with skeys", e);
+			if (DebugSign.DEBUG_SIGN)
+				throw new RuntimeException("Errors occurred when login with skeys", e);
+			else
+				return new OperationResult(null, false, "Internal server error");
 		}
 
-		return true;
+		return new OperationResult(null, true, null);
 	}
 
 	public UserInfo getUserInfo() {
 		if (userId == -1)
 			return null;
 
-		return new UserInfo();
-	}
-
-	public class UserInfo {
-		public final int userId;
-		public final String userName;
-		public final String userEmail;
-		public final Date userRegtime;
-		public final boolean userEmailCheck;
-
-		UserInfo() {
-			try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
-					PreparedStatement ps = dbconn.prepareStatement(
-							"SELECT `userName`, `userEmail`, `userRegtime`, `userEmailCheck` FROM `user` WHERE `userName`=? LIMIT 1");) {
-				ps.setInt(1, User.this.userId);
-				try (ResultSet result = ps.executeQuery();) {
-					result.first();
-					this.userId = User.this.userId;
-					this.userName = result.getString(1);
-					this.userEmail = result.getString(2);
-					this.userRegtime = new Date(result.getTimestamp(3).getTime());
-					this.userEmailCheck = result.getString(4).equals("yes");
-				}
-			} catch (SQLException e) {
-				throw new RuntimeException("Errors occurred when login", e);
-			}
-		}
+		return new UserInfo(userId);
 	}
 
 	public boolean isLogin() {
 		return userId != -1;
+	}
+
+	public static Integer getUserIdByName(String userName) {
+		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
+				PreparedStatement ps2 = dbconn.prepareStatement("SELECT `userId` FROM `user` WHERE `userName` = ?");) {
+			ps2.setString(1, userName);
+			try (ResultSet set = ps2.executeQuery()) {
+				if (set.first())
+					return set.getInt(1);
+				else
+					return -1;
+			}
+		} catch (SQLException e) {
+			return -1;
+		}
+	}
+
+	public static void WriteUserOperation(int userId, String type, String result, String ip) {
+		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
+				PreparedStatement ps2 = dbconn.prepareStatement(
+						"INSERT INTO `useroperation` (`userId`, `userOperationType`, `userOperationResult`, `userOperationIP`) VALUES (?,?,?,?)");) {
+			ps2.setInt(1, userId);
+			ps2.setString(2, type);
+			ps2.setString(3, result);
+			ps2.setString(4, ip);
+			ps2.executeUpdate();
+		} catch (SQLException e) {
+		}
+	}
+
+	public OperationInfo[] getOperations() {
+		ArrayList<OperationInfo> result = new ArrayList<>();
+
+		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
+				PreparedStatement ps = dbconn.prepareStatement(
+						"SELECT `userOperationId`, `userOperationType`, `userOperationResult`,`userOperationIP`,`userOperationTime` FROM `useroperation` WHERE `userId` = ? ORDER BY `userOperationId` DESC LIMIT 30");) {
+			ps.setInt(1, userId);
+			try (ResultSet set = ps.executeQuery()) {
+				while (set.next()) {
+					OperationInfo info = new OperationInfo();
+					info.id = set.getInt(1);
+					info.userId = userId;
+					info.operationType = set.getString(2);
+					info.operationResult = set.getString(3);
+					info.ip = set.getString(4);
+					info.time = new Date(set.getTimestamp(5).getTime());
+					result.add(info);
+				}
+			}
+		} catch (SQLException e) {
+		}
+
+		if(result.size() == 0)
+			return new OperationInfo[0];
+		return result.toArray(new OperationInfo[0]);
 	}
 }

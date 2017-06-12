@@ -4,8 +4,6 @@
 
 <%@include file="include_header.jsp"%>
 
-<% new User(); %>
-
 <main class="main">
 <ol class="breadcrumb">
 	<li class="breadcrumb-item active">Home</li>
