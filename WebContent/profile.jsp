@@ -4,7 +4,7 @@
 <%
 	if (user.isLogin()) {
 
-		UserInfo userinfo = user.getUserInfo();
+		UserInfo userinfo = new UserInfo(user);
 
 		if (request.getMethod().equals("POST")) {
 			String nickname = request.getParameter("nickname");

@@ -13,7 +13,7 @@ public class UserInfo {
 	public final Date userRegtime;
 	public final boolean userEmailCheck;
 
-	UserInfo(int userId) {
+	public UserInfo(int userId) {
 		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
 				PreparedStatement ps = dbconn.prepareStatement(
 						"SELECT `userName`, `userEmail`, `userRegtime`, `userEmailCheck` FROM `user` WHERE `userId`=? LIMIT 1");) {
@@ -29,6 +29,14 @@ public class UserInfo {
 		} catch (SQLException e) {
 			throw new RuntimeException("Errors occurred when login", e);
 		}
+	}
+
+	public UserInfo(User user) {
+		this(user.getUserId());
+	}
+	
+	public UserInfo(String userName){
+		this(getUserIdByName(userName));
 	}
 
 	public String getAttribute(String name) {
@@ -86,9 +94,8 @@ public class UserInfo {
 		else
 			return userName;
 	}
-	
-	public void setNickName(String nick)
-	{
+
+	public void setNickName(String nick) {
 		setAttribute("nick", nick);
 	}
 
@@ -110,20 +117,35 @@ public class UserInfo {
 			return 0;
 		return Integer.parseInt(gender);
 	}
-	
-	public String getBirthday(){
+
+	public String getBirthday() {
 		return getAttribute("birthday");
 	}
-	
-	public void setBirthday(String birthday){
+
+	public void setBirthday(String birthday) {
 		setAttribute("birthday", birthday);
 	}
-	
-	public String getIntroduction(){
+
+	public String getIntroduction() {
 		return getAttribute("intro");
 	}
-	
-	public void setIntroduction(String intro){
+
+	public void setIntroduction(String intro) {
 		setAttribute("intro", intro);
+	}
+
+	public static Integer getUserIdByName(String userName) {
+		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
+				PreparedStatement ps2 = dbconn.prepareStatement("SELECT `userId` FROM `user` WHERE `userName` = ?");) {
+			ps2.setString(1, userName);
+			try (ResultSet set = ps2.executeQuery()) {
+				if (set.first())
+					return set.getInt(1);
+				else
+					return -1;
+			}
+		} catch (SQLException e) {
+			return -1;
+		}
 	}
 }

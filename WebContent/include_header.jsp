@@ -14,7 +14,7 @@
 		response.sendRedirect("login.jsp");
 	} else {
 
-		UserInfo userinfo = user.getUserInfo();
+		UserInfo userinfo = new UserInfo(user);
 %>
 <!DOCTYPE html>
 <html lang="en">

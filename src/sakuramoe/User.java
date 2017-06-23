@@ -1,7 +1,5 @@
 package sakuramoe;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,63 +12,6 @@ import java.util.Date;
 import java.util.regex.Pattern;
 
 public class User {
-
-	private static class PasswordSHA {
-		final static String SALT = ".30c8h*630_&3/3fbpwfd'";
-
-		static byte[] passwordSHA(String password) {
-			MessageDigest md;
-
-			try {
-				md = MessageDigest.getInstance("SHA-256");
-			} catch (NoSuchAlgorithmException e) {
-				throw new RuntimeException("Cannot find SHA-256", e);
-			}
-
-			md.update((password + SALT).getBytes());
-			byte[] savepassword = md.digest();
-
-			return savepassword;
-		}
-	}
-
-	private static class HexString {
-		static String bytesToHexString(byte[] src) {
-			StringBuilder stringBuilder = new StringBuilder("");
-			if (src == null || src.length <= 0) {
-				return null;
-			}
-			for (int i = 0; i < src.length; i++) {
-				int v = src[i] & 0xFF;
-				String hv = Integer.toHexString(v);
-				if (hv.length() < 2) {
-					stringBuilder.append(0);
-				}
-				stringBuilder.append(hv);
-			}
-			return stringBuilder.toString();
-		}
-
-		static byte[] hexStringToBytes(String hexString) {
-			if (hexString == null || hexString.equals("")) {
-				return null;
-			}
-			hexString = hexString.toUpperCase();
-			int length = hexString.length() / 2;
-			char[] hexChars = hexString.toCharArray();
-			byte[] d = new byte[length];
-			for (int i = 0; i < length; i++) {
-				int pos = i * 2;
-				d[i] = (byte) (charToByte(hexChars[pos]) << 4 | charToByte(hexChars[pos + 1]));
-			}
-			return d;
-		}
-
-		private static byte charToByte(char c) {
-			return (byte) "0123456789ABCDEF".indexOf(c);
-		}
-	}
-
 	public static class UserInfoPattern {
 		public static final Pattern patternUserName = Pattern.compile("[a-zA-Z0-9_]{1,31}");
 		public static final Pattern patternPassword = Pattern.compile(".{6,31}");
@@ -124,7 +65,7 @@ public class User {
 				throw new RuntimeException("Errors occurred when login", e);
 			}
 
-			return HexString.bytesToHexString(skey);
+			return Util.HexString.bytesToHexString(skey);
 		}
 
 		static void sendEmailSkey(int userId, String purpose) {
@@ -132,18 +73,6 @@ public class User {
 				throw new RuntimeException("Skey type error.");
 
 			generateSkey(userId, purpose);
-		}
-	}
-
-	public static class OperationResult {
-		public boolean success;
-		public Object result;
-		public String reason;
-
-		OperationResult(Object result, boolean success, String reason) {
-			this.success = success;
-			this.result = result;
-			this.reason = reason;
 		}
 	}
 
@@ -176,7 +105,7 @@ public class User {
 				PreparedStatement ps = dbconn.prepareStatement(
 						"SELECT `userId` FROM `user` WHERE `userName`=? AND `userPassword`=? LIMIT 1");) {
 			ps.setString(1, userName);
-			ps.setBytes(2, PasswordSHA.passwordSHA(password));
+			ps.setBytes(2, Util.PasswordSHA.passwordSHA(password));
 			try (ResultSet result = ps.executeQuery();) {
 				if (result.first()) {
 					userId = result.getInt(1);
@@ -184,7 +113,7 @@ public class User {
 					WriteUserOperation(userId, "Login", "Success", ip);
 					return new OperationResult(null, true, null);
 				}
-				int id = getUserIdByName(userName);
+				int id = UserInfo.getUserIdByName(userName);
 				if (id != -1)
 					WriteUserOperation(id, "Login", "Error", ip);
 				return new OperationResult(null, false, "Invaild username or password");
@@ -205,7 +134,7 @@ public class User {
 				PreparedStatement ps = dbconn.prepareStatement(
 						"SELECT `userSkeyId` FROM `userskey` WHERE `userId`=? AND `userSkeyUseage`='login' AND `userSkeySkey` = ? AND `userSkeyExprie`>CURRENT_TIMESTAMP");) {
 			ps.setInt(1, userId);
-			ps.setBytes(2, HexString.hexStringToBytes(userSkey));
+			ps.setBytes(2, Util.HexString.hexStringToBytes(userSkey));
 			try (ResultSet result = ps.executeQuery();) {
 				if (result.first()) {
 					this.userId = userId;
@@ -307,7 +236,7 @@ public class User {
 				PreparedStatement ps = dbconn.prepareStatement(
 						"SELECT FROM `userSkeyId` WHERE `userId`=? AND `userSkeyUseage`='login' AND `userSkeySkey` = ? AND `userSkeyExprie`>CURRENT_TIMESTAMP");) {
 			ps.setInt(1, userId);
-			ps.setBytes(2, HexString.hexStringToBytes(skey));
+			ps.setBytes(2, Util.HexString.hexStringToBytes(skey));
 			try (ResultSet result = ps.executeQuery();) {
 				if (result.first()) {
 					if (purpose.equals("emailcheck")) {
@@ -320,7 +249,7 @@ public class User {
 					} else if (purpose.equals("changepwd")) {
 						try (PreparedStatement ps2 = dbconn
 								.prepareStatement("UPDATE `user` SET `userPassword` = ? WHERE `userId` = ?");) {
-							ps2.setBytes(1, PasswordSHA.passwordSHA(password));
+							ps2.setBytes(1, Util.PasswordSHA.passwordSHA(password));
 							ps2.setInt(2, userId);
 							ps2.executeUpdate();
 						}
@@ -348,13 +277,13 @@ public class User {
 
 		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
 				PreparedStatement ps2 = dbconn.prepareStatement(
-						"INSERT INTO `user` (`userName`, `userEmail`, `userPassword`) VALUES (?, ?, ?)",Statement.RETURN_GENERATED_KEYS);) {
+						"INSERT INTO `user` (`userName`, `userEmail`, `userPassword`) VALUES (?, ?, ?)",
+						Statement.RETURN_GENERATED_KEYS);) {
 			ps2.setString(1, userName);
 			ps2.setString(2, userEmail);
-			ps2.setBytes(3, PasswordSHA.passwordSHA(userPassword));
+			ps2.setBytes(3, Util.PasswordSHA.passwordSHA(userPassword));
 			ps2.executeUpdate();
-			try(ResultSet key = ps2.getGeneratedKeys())
-			{
+			try (ResultSet key = ps2.getGeneratedKeys()) {
 				key.first();
 				int newkey = key.getInt(1);
 				WriteUserOperation(newkey, "Register", "Success", ip);
@@ -371,30 +300,8 @@ public class User {
 		return new OperationResult(null, true, null);
 	}
 
-	public UserInfo getUserInfo() {
-		if (userId == -1)
-			return null;
-
-		return new UserInfo(userId);
-	}
-
 	public boolean isLogin() {
 		return userId != -1;
-	}
-
-	public static Integer getUserIdByName(String userName) {
-		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
-				PreparedStatement ps2 = dbconn.prepareStatement("SELECT `userId` FROM `user` WHERE `userName` = ?");) {
-			ps2.setString(1, userName);
-			try (ResultSet set = ps2.executeQuery()) {
-				if (set.first())
-					return set.getInt(1);
-				else
-					return -1;
-			}
-		} catch (SQLException e) {
-			return -1;
-		}
 	}
 
 	public static void WriteUserOperation(int userId, String type, String result, String ip) {
@@ -432,7 +339,7 @@ public class User {
 		} catch (SQLException e) {
 		}
 
-		if(result.size() == 0)
+		if (result.size() == 0)
 			return new OperationInfo[0];
 		return result.toArray(new OperationInfo[0]);
 	}
