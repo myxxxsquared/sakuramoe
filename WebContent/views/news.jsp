@@ -1,7 +1,5 @@
-﻿<%@ page contentType="text/html; charset=utf-8" language="java"
-	errorPage=""%>
-<%@include file="include_header.jsp"%>
-<main class="main">
+﻿<%@ page contentType="text/html; charset=utf-8" language="java"%>
+
 <ol class="breadcrumb">
 	<li class="breadcrumb-item">Home</li>
 	<li class="breadcrumb-item active">News</li>
@@ -27,13 +25,16 @@
 						enim ad minim veniam, quis nostrud exerci tation ullamcorper
 						suscipit lobortis nisl ut aliquip ex ea commodo consequat.</div>
 					<div class="card-footer">
-						<button type="button" class="btn btn-success">
-							<i class="icon-action-redo"></i>&nbsp;Forward
+						<button type="button" class="btn btn-success btn-post-forward"
+							postid="1">
+							<i class="icon-action-redo"></i>&nbsp;Forward(<span liked="0">5</span>)
 						</button>
-						<button type="button" class="btn btn-success">
-							<i class="icon-like"></i>&nbsp;Like
+						<button type="button" class="btn btn-success btn-post-like"
+							postid="1">
+							<i class="icon-like"></i>&nbsp;Like(<span liked="0">5</span>)
 						</button>
-						<button type="button" class="btn btn-success">
+						<button type="button" class="btn btn-success btn-post-more"
+							postid="1">
 							<i class="icon-list"></i>&nbsp;More
 						</button>
 					</div>
@@ -42,5 +43,5 @@
 		</div>
 	</div>
 </div>
-</main>
-<%@include file="include_footer.jsp"%>
+
+<script type="text/javascript" src="js/comment.js"></script>

@@ -1,8 +1,7 @@
-﻿<%@ page contentType="text/html; charset=utf-8" language="java"
-	errorPage=""%>
-<%@include file="include_header.jsp"%>
+﻿<%@ page contentType="text/html; charset=utf-8" language="java"%>
+
 <script src="bower_components/ckeditor/ckeditor.js"></script>
-<main class="main">
+
 <ol class="breadcrumb">
 	<li class="breadcrumb-item">Home</li>
 	<li class="breadcrumb-item active">Create a post</li>
@@ -12,7 +11,7 @@
 		<div class="row">
 			<div class="col-12">
 				<div class="card">
-					<form action="action_post.jsp" method="post">
+					<form id="post-form" action="action_post.jsp" method="post">
 						<div class="card-header">What's on your mind?</div>
 						<div class="card-block">
 							<textarea name="post-content" rows="9" class="form-control"
@@ -31,7 +30,7 @@
 									</select>
 								</div>
 								<div class="col-sm-auto">
-									<button type="submit" class="btn btn-primary">Post</button>
+									<button id="post-submit" type="button" class="btn btn-primary">Post</button>
 								</div>
 							</div>
 						</div>
@@ -41,5 +40,13 @@
 		</div>
 	</div>
 </div>
-</main>
-<%@include file="include_footer.jsp"%>
+
+<script type="text/javascript">
+	$(document).ready(function() {
+		$("#post-submit").click(function() {
+			$.post("action_post.jsp", $("#post-form").serialize(), function() {
+				setUpUrl("home.jsp");
+			});
+		});
+	});
+</script>

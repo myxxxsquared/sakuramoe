@@ -1,15 +1,11 @@
 ﻿<%@ page contentType="text/html; charset=utf-8" language="java"
 	errorPage=""%>
 
-<%@include file="include_header.jsp"%>
-
-<main class="main">
 <ol class="breadcrumb">
 	<li class="breadcrumb-item">Home</li>
 	<li class="breadcrumb-item">Settings</li>
-	<li class="breadcrumb-item active">Delete user</li>
+	<li class="breadcrumb-item active">Change Password</li>
 </ol>
-
 <div class="container-fluid">
 	<div class="animated fadeIn">
 		<div class="row">
@@ -17,7 +13,7 @@
 				<div class="card">
 					<form action="" method="post" enctype="multipart/form-data"
 						class="form-horizontal">
-						<div class="card-header">Delete User</div>
+						<div class="card-header">Change Password</div>
 						<div class="card-block">
 							<div class="form-group row">
 								<div class="col-12">To continue, first verify it's you</div>
@@ -42,6 +38,3 @@
 		</div>
 	</div>
 </div>
-</main>
-
-<%@include file="include_footer.jsp"%>

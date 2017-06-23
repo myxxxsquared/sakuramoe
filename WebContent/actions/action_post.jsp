@@ -1,7 +1,7 @@
 <%@page import="sakuramoe.Post"%>
 <%@page import="sakuramoe.User"%>
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-	pageEncoding="ISO-8859-1"%>
+<%@ page language="java" contentType="text/html; charset=utf-8"
+	pageEncoding="utf-8"%>
 
 <%
 	request.setCharacterEncoding("utf-8");
@@ -15,7 +15,7 @@
 	} else {
 		String content = request.getParameter("post-content");
 		if (content != null && content.length() > 0) {
-			Post.CreatePost(user, content);
+			Post.createPost(user, content);
 		}
 	}
 %>

@@ -1,10 +1,23 @@
-﻿<%@page import="sakuramoe.OperationInfo"%>
+﻿<%@page import="sakuramoe.UserInfo"%>
+<%@page import="sakuramoe.User"%>
+<%@page import="sakuramoe.OperationInfo"%>
 <%@ page contentType="text/html; charset=utf-8" language="java"
 	errorPage=""%>
 
-<%@include file="include_header.jsp"%>
+<%
+	if (session.getAttribute("user") == null) {
+		session.setAttribute("user", new User());
+	}
+	User user = (User) session.getAttribute("user");
+	if (!user.isLogin()) {
+		response.sendRedirect("login.jsp");
+		return;
+	}
 
-<main class="main">
+	UserInfo userinfo = new UserInfo(user);
+%>
+
+
 <ol class="breadcrumb">
 	<li class="breadcrumb-item">Home</li>
 	<li class="breadcrumb-item">Settings</li>
@@ -35,7 +48,8 @@
 								<%
 									OperationInfo[] infos = user.getOperations();
 									for (OperationInfo i : infos)
-										out.print(String.format("<tr><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>", i.id, i.time, i.operationType, i.operationResult, i.ip));
+										out.print(String.format("<tr><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>", i.id,
+												i.time, i.operationType, i.operationResult, i.ip));
 								%>
 							</tbody>
 						</table>
@@ -46,6 +60,3 @@
 		</div>
 	</div>
 </div>
-</main>
-
-<%@include file="include_footer.jsp"%>

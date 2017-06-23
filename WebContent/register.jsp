@@ -1,6 +1,6 @@
 <%@page import="sakuramoe.Tools"%>
-<%@page import="sakuramoe.User.OperationResult"%>
-<%@page import="sakuramoe.CookieReader"%>
+<%@page import="sakuramoe.OperationResult"%>
+<%@page import="sakuramoe.Util.CookieReader"%>
 <%@page import="sakuramoe.User"%>
 <%@ page contentType="text/html; charset=utf-8" language="java"
 	errorPage=""%>

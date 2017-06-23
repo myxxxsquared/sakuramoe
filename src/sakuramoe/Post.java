@@ -37,11 +37,11 @@ public class Post {
 		public int userId;
 		public String userDesc;
 		public String userAvatar;
+		public String parentDesc;
 		public Date timePosted;
 		public Date timeModified;
 		public String content;
-
-		public List<CommentTreeNode> children;
+		public int depth;
 	}
 
 	private int postId;
@@ -149,11 +149,12 @@ public class Post {
 		return result;
 	}
 
-	public static List<CommentTreeNode> parseCommentTree(List<Comment> comments) {
-		return parseCommentTree(comments, -1);
+	public static List<CommentTreeNode> parseCommentTree(List<Comment> comments, String parentDesc) {
+		return parseCommentTree(comments, -1, parentDesc, 0);
 	}
 
-	private static List<CommentTreeNode> parseCommentTree(List<Comment> comments, int parent) {
+	private static List<CommentTreeNode> parseCommentTree(List<Comment> comments, int parent, String parentDesc,
+			int depth) {
 		List<CommentTreeNode> result = new ArrayList<CommentTreeNode>();
 
 		for (Comment c : comments) {
@@ -168,7 +169,10 @@ public class Post {
 				node.timePosted = c.commentTime;
 				node.timeModified = c.commentModified;
 				node.content = c.commentContent;
+
 				result.add(node);
+				for (CommentTreeNode childnode : parseCommentTree(comments, node.postId, node.userDesc, depth + 1))
+					result.add(childnode);
 			}
 		}
 

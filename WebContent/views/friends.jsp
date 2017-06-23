@@ -1,7 +1,5 @@
-﻿<%@ page contentType="text/html; charset=utf-8" language="java"
-	errorPage=""%>
-<%@include file="include_header.jsp"%>
-<main class="main">
+﻿<%@ page contentType="text/html; charset=utf-8" language="java"%>
+
 <ol class="breadcrumb">
 	<li class="breadcrumb-item">Home</li>
 	<li class="breadcrumb-item active">Friends</li>
@@ -65,10 +63,12 @@
 					<div class="card-footer">
 						<div class="row">
 							<div class="col-sm-auto">
-								<button type="button" class="btn btn-success">Home</button>
+								<button type="button" class="btn btn-success btn-friends-home"
+									userid="1">Home</button>
 							</div>
 							<div class="col-sm-auto">
-								<button type="button" class="btn btn-danger">Remove</button>
+								<button type="button" class="btn btn-danger btn-friends-remove"
+									userid="1">Remove</button>
 							</div>
 						</div>
 					</div>
@@ -77,5 +77,4 @@
 		</div>
 	</div>
 </div>
-</main>
-<%@include file="include_footer.jsp"%>
+<script type="text/javascript" src="js/comment.js"></script>

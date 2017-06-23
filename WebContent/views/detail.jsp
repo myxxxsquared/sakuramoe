@@ -1,9 +1,12 @@
-﻿<%@page import="java.util.Date"%>
-<%@page import="sakuramoe.PostInfo"%>
+﻿<%@page import="sakuramoe.UserInfo"%>
+<%@page import="sakuramoe.Util"%>
+<%@page import="java.util.Date"%>
+<%@page import="java.util.List"%>
+<%@page import="sakuramoe.Post.PostInfo"%>
+<%@page import="sakuramoe.Post.CommentTreeNode"%>
 <%@page import="sakuramoe.Post"%>
 <%@ page contentType="text/html; charset=utf-8" language="java"
 	errorPage=""%>
-<%@include file="include_header.jsp"%>
 
 <%
 	int postId = -1;
@@ -16,17 +19,21 @@
 
 	Post post = new Post(postId);
 	PostInfo info = post.getPostInfo();
+	List<CommentTreeNode> comments = Post.parseCommentTree(post.getComments(), info.userDesc);
 	if (null == info) {
 		response.sendRedirect(".");
 		return;
 	}
-	UserInfo postUserInfo = new UserInfo(user);
 %>
 
-<main class="main">
+
 <ol class="breadcrumb">
 	<li class="breadcrumb-item">Friends</li>
-	<li class="breadcrumb-item"><%out.print(postUserInfo.getUserDesc()); %></li>
+	<li class="breadcrumb-item">
+		<%
+			out.print(info.userDesc);
+		%>
+	</li>
 	<li class="breadcrumb-item active">Post Detial</li>
 </ol>
 <div class="container-fluid">
@@ -41,57 +48,86 @@
 						</div>
 						<div class="float-left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
 						<div class="float-left">
-							<b><%out.print(postUserInfo.getUserDesc()); %></b><br /> <%out.print(info.timePosted.toString()); %>
+							<b> <%
+ 	out.print(info.userDesc);
+ %>
+							</b><br />
+							<%
+								out.print(info.timePosted.toString());
+							%>
 						</div>
 					</div>
-					<div class="card-block"><%out.print(info.content); %></div>
+					<div class="card-block">
+						<%
+							out.print(info.content);
+						%>
+					</div>
 					<div class="card-footer">
 						<div class="row">
 							<div class="col-sm-auto">
-								<button type="button" class="btn btn-success">
-									<i class="icon-action-redo"></i>&nbsp;Forward
+								<button type="button" class="btn btn-success btn-post-forward"
+									postid="1">
+									<i class="icon-action-redo"></i>&nbsp;Forward(<span liked="0">5</span>)
 								</button>
 							</div>
 							<div class="col-sm-auto">
-								<button type="button" class="btn btn-success">
-									<i class="icon-like"></i>&nbsp;Like
+								<button type="button" class="btn btn-success btn-post-like"
+									postid="1">
+									<i class="icon-like"></i>&nbsp;Like(<span liked="0">5</span>)
 								</button>
+
+
 							</div>
 							<div class="col-sm-6">
 								<div class="controls">
 									<div class="input-group">
 										<input id="appendedInputButton" class="form-control" size="16"
 											type="text"> <span class="input-group-btn">
-											<button class="btn btn-primary" type="button">Reply
-											</button>
+											<button class="btn btn-primary btn-post-comment"
+												type="button" onclick="">Reply</button>
 										</span>
 									</div>
 								</div>
 							</div>
 						</div>
 					</div>
+					<%
+						if (comments.size() != 0) {
+					%>
 					<div class="card-block">
-						<div>
+						<%
+							for (CommentTreeNode node : comments) {
+						%>
+						<div style="margin-left: <%out.print(node.depth);%>0px;">
 							<div class="row">
 								<div class="col-12">
 									<div class="float-left">
-										<img src="img/avatars/6.jpg" height="25em" class="img-avatar"
-											alt="admin@bootstrapmaster.com">
+										<img src="<%out.print(node.userAvatar);%>" height="25em"
+											class="img-avatar">
 									</div>
 									<div class="float-left">&nbsp;&nbsp;&nbsp;</div>
 									<div class="float-left">
-										<b> Admin </b> 1970-01-01 00:00
+										<b> <%
+ 	out.print(node.userDesc);
+ %>
+										</b>
+										<%
+											out.print(node.timePosted);
+										%>
 									</div>
 								</div>
 							</div>
 							<div class="row">
 								<div class="col-12">
-									Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed
-									diam nonummy nibh euismod tincidunt ut laoreet dolore magna
-									aliquam erat volutpat. Ut wisi enim ad minim veniam, quis
-									nostrud exerci tation ullamcorper suscipit lobortis nisl ut
-									aliquip ex ea commodo consequat.
-									<hr />
+									<p>
+										<a href="#">Reply <%
+											out.print(node.parentDesc);
+										%>: &nbsp;
+										</a>
+										<%
+											out.print(Util.htmlEncode(node.content));
+										%>
+									</p>
 									<div class="controls">
 										<div class="input-group">
 											<input id="appendedInputButton" class="form-control"
@@ -104,10 +140,18 @@
 								</div>
 							</div>
 						</div>
+						<hr />
+						<%
+							}
+						%>
 					</div>
+					<%
+						}
+					%>
 				</div>
 			</div>
 		</div>
 	</div>
-</main>
-<%@include file="include_footer.jsp"%>
+</div>
+
+<script type="text/javascript" src="js/comment.js"></script>

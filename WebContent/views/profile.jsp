@@ -1,32 +1,38 @@
-﻿<%@ page contentType="text/html; charset=utf-8" language="java"
-	errorPage="" pageEncoding="UTF-8"%>
-<%@include file="include_header.jsp"%>
+﻿<%@page import="sakuramoe.UserInfo"%>
+<%@page import="sakuramoe.User"%>
+<%@ page contentType="text/html; charset=utf-8" pageEncoding="UTF-8"%>
 <%
-	if (user.isLogin()) {
+	if (session.getAttribute("user") == null) {
+		session.setAttribute("user", new User());
+	}
+	User user = (User) session.getAttribute("user");
+	if (!user.isLogin()) {
+		response.sendRedirect("login.jsp");
+		return;
+	}
 
-		UserInfo userinfo = new UserInfo(user);
+	UserInfo userinfo = new UserInfo(user);
 
-		if (request.getMethod().equals("POST")) {
-			String nickname = request.getParameter("nickname");
-			String gender = request.getParameter("gender");
-			String birthday = request.getParameter("birthday");
-			String intro = request.getParameter("intro");
+	if (request.getMethod().equals("POST")) {
+		String nickname = request.getParameter("nickname");
+		String gender = request.getParameter("gender");
+		String birthday = request.getParameter("birthday");
+		String intro = request.getParameter("intro");
 
-			if (nickname != null)
-				userinfo.setNickName(nickname);
-			if (gender != null)
-				try {
-					userinfo.setGender(Integer.parseInt(gender));
-				} catch (Exception e) {
-				}
-			if (birthday != null)
-				userinfo.setBirthday(birthday);
-			if (intro != null)
-				userinfo.setIntroduction(intro);
-		}
+		if (nickname != null)
+			userinfo.setNickName(nickname);
+		if (gender != null)
+			try {
+				userinfo.setGender(Integer.parseInt(gender));
+			} catch (Exception e) {
+			}
+		if (birthday != null)
+			userinfo.setBirthday(birthday);
+		if (intro != null)
+			userinfo.setIntroduction(intro);
+	}
 %>
 
-<main class="main">
 <ol class="breadcrumb">
 	<li class="breadcrumb-item">Home</li>
 	<li class="breadcrumb-item active">Profile</li>
@@ -67,14 +73,14 @@
 										%>
 										<option value="0"
 											<%if (gendar == 0)
-					out.print("selected=\"selected\"");%>>Please
+				out.print("selected=\"selected\"");%>>Please
 											select</option>
 										<option value="1"
 											<%if (gendar == 1)
-					out.print("selected=\"selected\"");%>>Male</option>
+				out.print("selected=\"selected\"");%>>Male</option>
 										<option value="2"
 											<%if (gendar == 2)
-					out.print("selected=\"selected\"");%>>Female</option>
+				out.print("selected=\"selected\"");%>>Female</option>
 									</select>
 								</div>
 							</div>
@@ -90,9 +96,11 @@
 								<label class="col-md-3 form-control-label" for="intro">Introduction</label>
 								<div class="col-md-9">
 									<textarea id="intro" name="intro" rows="9" class="form-control"
-										placeholder="Content.."><%
+										placeholder="Content..">
+										<%
 											out.print(userinfo.getIntroduction());
-										%></textarea>
+										%>
+									</textarea>
 								</div>
 							</div>
 						</div>
@@ -107,8 +115,3 @@
 		</div>
 	</div>
 </div>
-</main>
-<%
-	}
-%>
-<%@include file="include_footer.jsp"%>
