@@ -28,7 +28,7 @@
 			%>
 			<div class="col-sm-4 col-sm-6">
 				<div class="card">
-					<div class="card-block">
+					<div class="card-header">
 						<div class="row">
 							<div class="col-sm-auto">
 								<img src="<%out.print(info.getAvatar());%>" height="50em"
@@ -42,6 +42,14 @@
 							</div>
 						</div>
 					</div>
+					<%
+						if (cite.citeWay.equals("addfriend")) {
+					%>
+					<div class="card-block">
+						<div class="row">
+							<div class="col-sm-auto">Add friend.</div>
+						</div>
+					</div>
 					<div class="card-footer">
 						<div class="row">
 							<div class="col-sm-auto">
@@ -50,6 +58,27 @@
 							</div>
 						</div>
 					</div>
+					<%
+						} else {
+					%>
+					<div class="card-block">
+						<div class="row">
+							<div class="col-sm-auto">New reply.</div>
+						</div>
+					</div>
+					<div class="card-footer">
+						<div class="row">
+							<div class="col-sm-auto">
+								<button type="button" class="btn btn-success btn-post-more"
+							postid="<%out.print(cite.citePost);%>">
+							<i class="icon-list"></i>&nbsp;View
+						</button>
+							</div>
+						</div>
+					</div>
+					<%
+						}
+					%>
 				</div>
 			</div>
 			<%

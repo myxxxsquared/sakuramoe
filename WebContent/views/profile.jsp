@@ -96,11 +96,9 @@
 								<label class="col-md-3 form-control-label" for="intro">Introduction</label>
 								<div class="col-md-9">
 									<textarea id="intro" name="intro" rows="9" class="form-control"
-										placeholder="Content..">
-										<%
+										placeholder="Content.."><%
 											out.print(userinfo.getIntroduction());
-										%>
-									</textarea>
+										%></textarea>
 								</div>
 							</div>
 						</div>

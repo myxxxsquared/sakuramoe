@@ -18,7 +18,6 @@ public class Post {
 		public int userId;
 		public Date commentTime;
 		public String commentContent;
-		public Date commentModified;
 		public int commentParent;
 	}
 
@@ -28,7 +27,6 @@ public class Post {
 		public String userDesc;
 		public String userAvatar;
 		public Date timePosted;
-		public Date timeModified;
 		public String content;
 	}
 
@@ -40,7 +38,6 @@ public class Post {
 		public String userAvatar;
 		public String parentDesc;
 		public Date timePosted;
-		public Date timeModified;
 		public String content;
 		public int depth;
 	}
@@ -59,7 +56,7 @@ public class Post {
 		PostInfo result = new PostInfo();
 		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
 				PreparedStatement ps = dbconn.prepareStatement(
-						"SELECT `userId`, `postTime`, `postContent`, `postModified` FROM `post` WHERE `postId` = ?",
+						"SELECT `userId`, `postTime`, `postContent` FROM `post` WHERE `postId` = ?",
 						Statement.RETURN_GENERATED_KEYS);) {
 			ps.setInt(1, postId);
 			try (ResultSet resultSet = ps.executeQuery()) {
@@ -72,8 +69,6 @@ public class Post {
 				UserInfo userInfo = new UserInfo(result.userId);
 				result.userAvatar = userInfo.getAvatar();
 				result.userDesc = userInfo.getUserDesc();
-				// result.timeModified = new
-				// Date(resultSet.getTimestamp(4).getTime());
 			}
 		} catch (SQLException e) {
 			throw new RuntimeException("", e);
@@ -105,13 +100,32 @@ public class Post {
 			ps.setInt(1, postId);
 			ps.setInt(2, user.getUserId());
 			ps.setString(3, content);
-			if(parent == -1)
+			if (parent == -1)
 				ps.setNull(4, Types.INTEGER);
 			else
 				ps.setInt(4, parent);
 			ps.executeUpdate();
+			Cites.cite(getPostInfo().userId, user.getUserId(), postId);
+			if (parent != -1) {
+				Cites.cite(getCommentUserId(parent), user.getUserId(), postId);
+			}
 		} catch (SQLException e) {
 			throw new RuntimeException("", e);
+		}
+	}
+
+	public static int getCommentUserId(int commentid) {
+		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
+				PreparedStatement ps2 = dbconn.prepareStatement("SELECT `userId` FROM `comment` WHERE `commentId` = ?");) {
+			ps2.setInt(1, commentid);
+			try (ResultSet set = ps2.executeQuery()) {
+				if (set.first())
+					return set.getInt(1);
+				else
+					return -1;
+			}
+		} catch (SQLException e) {
+			return -1;
 		}
 	}
 
@@ -120,7 +134,7 @@ public class Post {
 
 		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
 				PreparedStatement ps = dbconn.prepareStatement(
-						"SELECT `commentId`, `postId`, `userId`, `commentTime`, `commentContent`, `commentModified`, `commentParent` FROM `comment` WHERE `postId` = ?",
+						"SELECT `commentId`, `postId`, `userId`, `commentTime`, `commentContent`, `commentParent` FROM `comment` WHERE `postId` = ?",
 						Statement.RETURN_GENERATED_KEYS);) {
 			ps.setInt(1, postId);
 			try (ResultSet r = ps.executeQuery();) {
@@ -131,7 +145,7 @@ public class Post {
 					comment.userId = r.getInt(3);
 					comment.commentTime = new Date(r.getTimestamp(4).getTime());
 					comment.commentContent = r.getString(5);
-					comment.commentParent = r.getInt(7);
+					comment.commentParent = r.getInt(6);
 					if (comment.commentParent == 0)
 						comment.commentParent = -1;
 					result.add(comment);
@@ -150,8 +164,8 @@ public class Post {
 		return result;
 	}
 
-	private static void parseCommentTree(List<Comment> comments, int parent, String parentDesc,
-			int depth, List<CommentTreeNode> result) {
+	private static void parseCommentTree(List<Comment> comments, int parent, String parentDesc, int depth,
+			List<CommentTreeNode> result) {
 		for (Comment c : comments) {
 			if (c.commentParent == parent) {
 				CommentTreeNode node = new CommentTreeNode();
@@ -162,7 +176,6 @@ public class Post {
 				node.userDesc = info.getUserDesc();
 				node.userAvatar = info.getAvatar();
 				node.timePosted = c.commentTime;
-				node.timeModified = c.commentModified;
 				node.content = c.commentContent;
 				node.depth = depth;
 				node.parentDesc = parentDesc;
@@ -206,13 +219,13 @@ public class Post {
 			throw new RuntimeException("", e);
 		}
 	}
-	
-	public int getNumberLike(){
+
+	public int getNumberLike() {
 		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
-				PreparedStatement ps = dbconn.prepareStatement(
-						"SELECT COUNT(`userId`) FROM `like` WHERE `postId` = ?", Statement.RETURN_GENERATED_KEYS);) {
+				PreparedStatement ps = dbconn.prepareStatement("SELECT COUNT(`userId`) FROM `like` WHERE `postId` = ?",
+						Statement.RETURN_GENERATED_KEYS);) {
 			ps.setInt(1, postId);
-			try(ResultSet r = ps.executeQuery()){
+			try (ResultSet r = ps.executeQuery()) {
 				r.first();
 				return r.getInt(1);
 			}
@@ -225,7 +238,8 @@ public class Post {
 		if (like) {
 			try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
 					PreparedStatement ps = dbconn.prepareStatement(
-							"INSERT INTO `like` (`postId`, `userId`) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);) {
+							"INSERT INTO `like` (`postId`, `userId`) VALUES (?, ?)",
+							Statement.RETURN_GENERATED_KEYS);) {
 				ps.setInt(1, postId);
 				ps.setInt(2, user.getUserId());
 				ps.executeUpdate();
@@ -235,7 +249,8 @@ public class Post {
 		} else {
 			try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
 					PreparedStatement ps = dbconn.prepareStatement(
-							"DELETE FROM `like` WHERE `postId` = ? AND `userId` = ?", Statement.RETURN_GENERATED_KEYS);) {
+							"DELETE FROM `like` WHERE `postId` = ? AND `userId` = ?",
+							Statement.RETURN_GENERATED_KEYS);) {
 				ps.setInt(1, postId);
 				ps.setInt(2, user.getUserId());
 				ps.executeUpdate();
@@ -243,7 +258,7 @@ public class Post {
 				throw new RuntimeException("", e);
 			}
 		}
-		
+
 	}
 
 }

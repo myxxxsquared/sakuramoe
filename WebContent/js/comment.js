@@ -60,4 +60,7 @@ $(document).ready(function() {
 			setUpUrl("friends.jsp");
 		});
 	});
+	$("#friend_find_button").click(function() {
+		setUpUrl("relation.jsp?friendname=" + $("#friend_add_id").val());
+	});
 });

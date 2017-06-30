@@ -1,4 +1,3 @@
-<%@page import="org.json.JSONObject"%>
 <%@page import="sakuramoe.UserInfo"%>
 <%@page import="sakuramoe.Friends"%>
 <%@page import="sakuramoe.User"%>

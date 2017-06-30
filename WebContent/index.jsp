@@ -96,14 +96,14 @@
 		<div class="sidebar">
 			<nav class="sidebar-nav">
 				<ul class="nav">
-					<li class="nav-item"><a class="nav-link" href="home.jsp"><i
-							class="icon-home"></i> Home <span class="badge badge-info"></span></a>
-					</li>
 					<li class="nav-item"><a class="nav-link"
 						href="create-post.jsp"><i class="icon-plus"></i> Create a post
 							<span class="badge badge-info"></span></a></li>
 					<li class="nav-item"><a class="nav-link" href="friends.jsp"><i
 							class="icon-people"></i> Friends <span class="badge badge-info"></span></a>
+					</li>
+					<li class="nav-item"><a class="nav-link" href="relation.jsp"><i
+							class="icon-people"></i> Common Friends <span class="badge badge-info"></span></a>
 					</li>
 					<li class="nav-item"><a class="nav-link" href="news.jsp"><i
 							class="icon-book-open"></i> News</a></li>

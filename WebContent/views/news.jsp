@@ -33,25 +33,40 @@
 				<div class="card">
 					<div class="card-header">
 						<div class="float-left">
-							<img src="<%out.print(pi.userAvatar); %>" height="50em" class="img-avatar">
+							<img src="<%out.print(pi.userAvatar);%>" height="50em"
+								class="img-avatar">
 						</div>
 						<div class="float-left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
 						<div class="float-left">
-							<b><%out.print(pi.userDesc); %></b><br /> <%out.print(pi.timePosted); %>
+							<b> <%
+ 	out.print(pi.userDesc);
+ %>
+							</b><br />
+							<%
+								out.print(pi.timePosted);
+							%>
 						</div>
 					</div>
-					<div class="card-block"><%out.print(pi.content); %></div>
+					<div class="card-block">
+						<%
+							out.print(pi.content);
+						%>
+					</div>
 					<div class="card-footer">
 						<button type="button" class="btn btn-success btn-post-forward"
-							postid="<%out.print(pi.postID); %>">
+							postid="<%out.print(pi.postID);%>">
 							<i class="icon-action-redo"></i>&nbsp;Forward
 						</button>
 						<button type="button" class="btn btn-success btn-post-like"
-							postid="<%out.print(pi.postID); %>">
-							<i class="icon-like"></i>&nbsp;Like(<span liked="<%out.print(p.like(user) ? "1" : "0");%>"><%out.print(p.getNumberLike());%></span>)
+							postid="<%out.print(pi.postID);%>">
+							<i class="icon-like"></i>&nbsp;Like(<span
+								liked="<%out.print(p.like(user) ? "1" : "0");%>"> <%
+ 	out.print(p.getNumberLike());
+ %>
+							</span>)
 						</button>
 						<button type="button" class="btn btn-success btn-post-more"
-							postid="<%out.print(pi.postID); %>">
+							postid="<%out.print(pi.postID);%>">
 							<i class="icon-list"></i>&nbsp;More
 						</button>
 					</div>
@@ -64,5 +79,13 @@
 		</div>
 	</div>
 </div>
+
+<script type="text/javascript">
+	$(document).ready(function() {
+		setTimeout(function() {
+			setUpUrl("news.jsp");
+		}, 30000);
+	});
+</script>
 
 <script type="text/javascript" src="js/comment.js"></script>

@@ -5,7 +5,7 @@
 $.ajaxLoad = true;
 
 //required when $.ajaxLoad = true
-$.defaultPage = 'home.jsp';
+$.defaultPage = 'news.jsp';
 $.subPagesDirectory = 'views/';
 $.page404 = '404.html';
 $.mainContent = $('.main');
