@@ -2,6 +2,7 @@
 <%@page import="sakuramoe.User"%>
 <%@ page contentType="text/html; charset=utf-8" pageEncoding="UTF-8"%>
 <%
+	request.setCharacterEncoding("utf-8");
 	if (session.getAttribute("user") == null) {
 		session.setAttribute("user", new User());
 	}
@@ -43,18 +44,9 @@
 			<div class="col-12">
 				<div class="card">
 					<div class="card-header">Profile</div>
-					<form action="#" method="post" class="form-horizontal">
+					<form action="actions/user_userinfo.jsp" method="post"
+						class="form-horizontal">
 						<div class="card-block">
-
-							<div class="form-group row">
-								<label class="col-md-3 form-control-label">Profile
-									Picture </label>
-								<div class="col-md-9">
-									<img src="<%out.print(userinfo.getAvatar());%>" height="50em"
-										class="img-avatar">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-									<button type="button" class="btn btn-secondary">Update</button>
-								</div>
-							</div>
 							<div class="form-group row">
 								<label class="col-md-3 form-control-label" for="nickname">Nick
 									Name</label>
@@ -65,7 +57,7 @@
 								</div>
 							</div>
 							<div class="form-group row">
-								<label class="col-md-3 form-control-label" for=gender">Gender</label>
+								<label class="col-md-3 form-control-label" for="gender">Gender</label>
 								<div class="col-md-9">
 									<select id="gender" name="gender" class="form-control">
 										<%
@@ -96,9 +88,11 @@
 								<label class="col-md-3 form-control-label" for="intro">Introduction</label>
 								<div class="col-md-9">
 									<textarea id="intro" name="intro" rows="9" class="form-control"
-										placeholder="Content.."><%
+										placeholder="Content..">
+										<%
 											out.print(userinfo.getIntroduction());
-										%></textarea>
+										%>
+									</textarea>
 								</div>
 							</div>
 						</div>

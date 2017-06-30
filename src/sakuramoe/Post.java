@@ -203,6 +203,23 @@ public class Post {
 		}
 		return result;
 	}
+	
+	public static List<Post> getUserNews(int userId) {
+		List<Post> result = new ArrayList<>();
+		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
+				PreparedStatement ps = dbconn.prepareStatement(
+						"SELECT `postId` FROM (SELECT `postId` FROM `post` WHERE `post`.`userId` = ?) AS `posts` ORDER BY `postId` DESC",
+						Statement.RETURN_GENERATED_KEYS);) {
+			ps.setInt(1, userId);
+			try (ResultSet resultSet = ps.executeQuery()) {
+				while (resultSet.next())
+					result.add(new Post(resultSet.getInt(1)));
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException("", e);
+		}
+		return result;
+	}
 
 	public boolean like(User user) {
 		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();

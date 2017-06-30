@@ -50,7 +50,7 @@
 					<div class="card-block">
 						<div class="row">
 							<div class="col-sm-auto">
-								<img src="img/avatars/6.jpg" height="50em" class="img-avatar"
+								<img src="<%out.print(info.getAvatar()); %>" height="50em" class="img-avatar"
 									alt="admin@bootstrapmaster.com">
 							</div>
 							<div class="col-sm-auto">
@@ -63,7 +63,7 @@
 						<hr />
 						<div class="row">
 							<div class="col-12">
-								<%
+								Gender: &nbsp; <%
 									switch (info.getGender()) {
 										case 0:
 											out.print("unknown");

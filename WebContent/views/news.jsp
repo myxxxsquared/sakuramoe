@@ -53,10 +53,6 @@
 						%>
 					</div>
 					<div class="card-footer">
-						<button type="button" class="btn btn-success btn-post-forward"
-							postid="<%out.print(pi.postID);%>">
-							<i class="icon-action-redo"></i>&nbsp;Forward
-						</button>
 						<button type="button" class="btn btn-success btn-post-like"
 							postid="<%out.print(pi.postID);%>">
 							<i class="icon-like"></i>&nbsp;Like(<span
@@ -83,7 +79,10 @@
 <script type="text/javascript">
 	$(document).ready(function() {
 		setTimeout(function() {
-			setUpUrl("news.jsp");
+			var url = location.hash.replace(/^#/, '');
+			if (url == 'news.jsp') {
+				setUpUrl("news.jsp");
+			}
 		}, 30000);
 	});
 </script>

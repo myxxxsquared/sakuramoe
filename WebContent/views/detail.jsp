@@ -26,7 +26,7 @@
 	Post post = new Post(postId);
 	PostInfo info = post.getPostInfo();
 	List<CommentTreeNode> comments = Post.parseCommentTree(post.getComments(), info.userDesc);
-	if (null == info) {
+	if (info == null) {
 		response.sendRedirect(".");
 		return;
 	}
@@ -70,12 +70,6 @@
 					</div>
 					<div class="card-footer">
 						<div class="row">
-							<div class="col-sm-auto">
-								<button type="button" class="btn btn-success btn-post-forward"
-									postid="<%out.print(postId);%>">
-									<i class="icon-action-redo"></i>&nbsp;Forward
-								</button>
-							</div>
 							<div class="col-sm-auto">
 								<button type="button" class="btn btn-success btn-post-like"
 									postid="<%out.print(postId);%>">
