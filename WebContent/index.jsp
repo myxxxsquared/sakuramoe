@@ -4,8 +4,6 @@
 	pageEncoding="UTF-8"%>
 
 <%
-	request.setCharacterEncoding("utf-8");
-
 	if (session.getAttribute("user") == null) {
 		session.setAttribute("user", new User());
 	}
@@ -53,7 +51,7 @@
 				class="nav-link navbar-toggler sidebar-toggler" href="#">☰</a></li>
 		</ul>
 		<ul class="nav navbar-nav ml-auto">
-			<li class="nav-item dropdown"><a
+			<!-- <li class="nav-item dropdown"><a
 				class="nav-link dropdown-toggle nav-link" data-toggle="dropdown"
 				href="#" role="button" aria-haspopup="true" aria-expanded="false">
 					<i class="icon-bell"></i><span
@@ -65,7 +63,7 @@
 					</div>
 					<a class="dropdown-item" href="#"><img src="" width="50em"
 						class="img-avatar"> Bdmin reply you.</a>
-				</div></li>
+				</div></li> -->
 			<li class="nav-item dropdown"><a
 				class="nav-link dropdown-toggle nav-link" data-toggle="dropdown"
 				href="#" role="button" aria-haspopup="true" aria-expanded="false">
@@ -111,6 +109,9 @@
 							class="icon-book-open"></i> News</a></li>
 					<li class="nav-item"><a class="nav-link" href="profile.jsp"><i
 							class="icon-list"></i> Profile</a></li>
+					<li class="nav-item"><a class="nav-link"
+						href="notifications.jsp"><i class="icon-list"></i>
+							Notifications</a></li>
 					<li class="divider"></li>
 				</ul>
 			</nav>
@@ -118,8 +119,6 @@
 
 		<!-- Main content -->
 		<main class="main"> </main>
-
-
 	</div>
 
 	<footer class="app-footer">

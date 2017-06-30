@@ -1,3 +1,4 @@
+<%@page import="org.json.JSONObject"%>
 <%@page import="sakuramoe.UserInfo"%>
 <%@page import="sakuramoe.Friends"%>
 <%@page import="sakuramoe.User"%>
@@ -5,16 +6,14 @@
 	pageEncoding="utf-8"%>
 
 <%
-	if (session.getAttribute("user") == null) {
-		session.setAttribute("user", new User());
-	}
-	User user = (User) session.getAttribute("user");
+	User user = User.getSessionUser(session);
+
 	if (!user.isLogin()) {
-		response.sendRedirect("login.jsp");
+		return;
 	} else {
 		String frinedid = request.getParameter("friendId");
-		if(frinedid == null || frinedid.length() == 0)
+		if (frinedid == null || frinedid.length() == 0)
 			return;
-		Friends.removeFriend(user, Integer.parseInt(frinedid));
+		Friends.acceptFriend(user, Integer.parseInt(frinedid));
 	}
 %>

@@ -23,20 +23,19 @@
 		<div class="row">
 			<div class="col-12">
 				<div class="card">
-					<form action="" method="post" enctype="multipart/form-data"
-						class="form-horizontal">
+					<div class="form-horizontal">
 						<div class="card-header">Add a friend</div>
 						<div class="card-block">
 							<div class="input-group">
-								<input id="appendedInputButton" class="form-control" size="16"
-									type="text" placeholder="User Name or Email Address" id="friend_add_id"> <span
-									class="input-group-btn">
-									<button class="btn btn-primary" id="friend_add_button" type="button">Add</button>
+								<input class="form-control" size="16" type="text"
+									placeholder="User Name or Email Address" id="friend_add_id">
+								<span class="input-group-btn">
+									<button class="btn btn-primary" id="friend_add_button"
+										type="button">Add</button>
 								</span>
 							</div>
 						</div>
-
-					</form>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -55,10 +54,9 @@
 									alt="admin@bootstrapmaster.com">
 							</div>
 							<div class="col-sm-auto">
-								<strong>
-									<%
-										out.print(info.getUserDesc());
-									%>
+								<strong> <%
+ 	out.print(info.getUserDesc());
+ %>
 								</strong>
 							</div>
 						</div>

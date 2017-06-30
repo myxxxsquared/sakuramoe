@@ -87,7 +87,7 @@ public class Friends {
 	public static void acceptFriend(User user, int friendId) {
 		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
 				PreparedStatement ps = dbconn.prepareStatement(
-						"INSERT INTO `friend` (`userId`, `friendId`) VALUES (?, ?); INSERT INTO `friend` (`userId`, `friendId`) VALUES (?, ?);");) {
+						"INSERT INTO `friend` (`userId`, `friendId`) VALUES (?, ?), (?, ?);");) {
 			ps.setInt(1, friendId);
 			ps.setInt(2, user.getUserId());
 			ps.setInt(4, friendId);

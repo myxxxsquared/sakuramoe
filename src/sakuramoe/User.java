@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpSession;
+
 public class User {
 	public static class UserInfoPattern {
 		public static final Pattern patternUserName = Pattern.compile("[a-zA-Z0-9_]{1,31}");
@@ -286,5 +288,13 @@ public class User {
 			else
 				return false;
 		}
+	}
+	
+	public static User getSessionUser(HttpSession session){
+		if (session.getAttribute("user") == null) {
+			session.setAttribute("user", new User());
+		}
+		User user = (User) session.getAttribute("user");
+		return user;
 	}
 }

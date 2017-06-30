@@ -131,7 +131,6 @@ public class Post {
 					comment.userId = r.getInt(3);
 					comment.commentTime = new Date(r.getTimestamp(4).getTime());
 					comment.commentContent = r.getString(5);
-					//comment.commentModified = new Date(r.getTimestamp(5).getTime());
 					comment.commentParent = r.getInt(7);
 					if (comment.commentParent == 0)
 						comment.commentParent = -1;
