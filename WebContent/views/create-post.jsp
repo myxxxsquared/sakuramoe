@@ -14,21 +14,14 @@
 					<form id="post-form" action="action_post.jsp" method="post">
 						<div class="card-header">What's on your mind?</div>
 						<div class="card-block">
-							<textarea name="post-content" rows="9" class="form-control"
+							<textarea name="post_content" rows="9" class="form-control"
 								placeholder="Content.."></textarea>
 							<script>
-								CKEDITOR.replace('post-content');
+								CKEDITOR.replace('post_content');
 							</script>
 						</div>
 						<div class="card-footer">
 							<div class="row">
-								<div class="col-sm-auto">
-									<select name="access" class="form-control">
-										<option value="2">Public</option>
-										<option value="1">Friends</option>
-										<option value="0">Only me</option>
-									</select>
-								</div>
 								<div class="col-sm-auto">
 									<button id="post-submit" type="button" class="btn btn-primary">Post</button>
 								</div>
@@ -44,7 +37,8 @@
 <script type="text/javascript">
 	$(document).ready(function() {
 		$("#post-submit").click(function() {
-			$.post("action_post.jsp", $("#post-form").serialize(), function() {
+			var post_content = CKEDITOR.instances.post_content.getData();
+			$.post("actions/post_post.jsp", {"post-content" : post_content}, function() {
 				setUpUrl("home.jsp");
 			});
 		});

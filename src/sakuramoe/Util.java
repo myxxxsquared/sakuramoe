@@ -4,41 +4,42 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 
 public class Util {
 	public static String htmlEncode(String source) {
-        if (source == null) {
-            return "";
-        }
-        String html = "";
-        StringBuffer buffer = new StringBuffer();
-        for (int i = 0; i < source.length(); i++) {
-            char c = source.charAt(i);
-            switch (c) {
-            case '<':
-                buffer.append("&lt;");
-                break;
-            case '>':
-                buffer.append("&gt;");
-                break;
-            case '&':
-                buffer.append("&amp;");
-                break;
-            case '"':
-                buffer.append("&quot;");
-                break;
-            case 10:
-            case 13:
-            	buffer.append(' ');
-                break;
-            default:
-                buffer.append(c);
-            }
-        }
-        html = buffer.toString();
-        return html;
-    }
-	
+		if (source == null) {
+			return "";
+		}
+		String html = "";
+		StringBuffer buffer = new StringBuffer();
+		for (int i = 0; i < source.length(); i++) {
+			char c = source.charAt(i);
+			switch (c) {
+			case '<':
+				buffer.append("&lt;");
+				break;
+			case '>':
+				buffer.append("&gt;");
+				break;
+			case '&':
+				buffer.append("&amp;");
+				break;
+			case '"':
+				buffer.append("&quot;");
+				break;
+			case 10:
+			case 13:
+				buffer.append(' ');
+				break;
+			default:
+				buffer.append(c);
+			}
+		}
+		html = buffer.toString();
+		return html;
+	}
+
 	static class PasswordSHA {
 		final static String SALT = ".30c8h*630_&3/3fbpwfd'";
 
@@ -94,7 +95,7 @@ public class Util {
 			return (byte) "0123456789ABCDEF".indexOf(c);
 		}
 	}
-	
+
 	public static class CookieReader {
 		public static String readCookie(Cookie[] cookies, String name) {
 			if (cookies == null)
@@ -108,4 +109,10 @@ public class Util {
 		}
 	}
 
+	public static String getRemortIP(HttpServletRequest request) {
+		if (request.getHeader("x-forwarded-for") == null) {
+			return request.getRemoteAddr();
+		}
+		return request.getHeader("x-forwarded-for");
+	}
 }

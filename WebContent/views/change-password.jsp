@@ -16,13 +16,26 @@
 						<div class="card-header">Change Password</div>
 						<div class="card-block">
 							<div class="form-group row">
-								<div class="col-12">To continue, first verify it's you</div>
-							</div>
-							<div class="form-group row">
-								<label class="col-md-3 form-control-label" for="text-input">Email
+								<label class="col-md-3 form-control-label" for="text-input">Old Password
 								</label>
 								<div class="col-md-9">
-									<input type="email" id="text-input" name="text-input"
+									<input type="password" name="oldpass"
+										class="form-control">
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-md-3 form-control-label" for="text-input">New Password
+								</label>
+								<div class="col-md-9">
+									<input type="password" name="newpass"
+										class="form-control">
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-md-3 form-control-label" for="text-input">Confirm Password
+								</label>
+								<div class="col-md-9">
+									<input type="password" name="newpass2"
 										class="form-control">
 								</div>
 							</div>

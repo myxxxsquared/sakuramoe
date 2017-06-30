@@ -30,8 +30,8 @@ public class User {
 			return patternSkey.matcher(skey).matches();
 		}
 
-		public static boolean checkEmailFormat(String email) {
-			return patternEmail.matcher(email).matches();
+		public static boolean checkEmailFormat(String skey) {
+			return patternEmail.matcher(skey).matches();
 		}
 	}
 
@@ -46,44 +46,32 @@ public class User {
 			return skey;
 		}
 
-		static String generateSkey(int userId, String purpose) {
-			if (!purpose.equals("login") && !purpose.equals("emailcheck") && !purpose.equals("changepwd"))
-				throw new RuntimeException("Skey type error.");
-
+		static String generateSkey(int userId) {
 			byte[] skey = SkeyGenerator.generateSkey();
 
 			try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();) {
 				try (PreparedStatement ps = dbconn.prepareStatement(
-						"INSERT INTO `userskey` (`userId`, `userSkeySkey`, `userSkeyExprie`, `userSkeyUseage`) VALUES (?, ?, ?, ?)");) {
+						"INSERT INTO `userskey` (`userId`, `userSkeySkey`, `userSkeyExprie`) VALUES (?, ?, ?)");) {
 					ps.setInt(1, userId);
 					ps.setBytes(2, skey);
 					ps.setTimestamp(3, new Timestamp(new Date().getTime() + SkeyGenerator.SkeyTimeSpan));
-					ps.setString(4, purpose);
 					ps.executeUpdate();
 				}
 			} catch (SQLException e) {
-				throw new RuntimeException("Errors occurred when login", e);
+				throw new RuntimeException("An error occurred when logining.", e);
 			}
 
 			return Util.HexString.bytesToHexString(skey);
 		}
-
-		static void sendEmailSkey(int userId, String purpose) {
-			if (!purpose.equals("emailcheck") && !purpose.equals("changepwd"))
-				throw new RuntimeException("Skey type error.");
-
-			generateSkey(userId, purpose);
-		}
 	}
 
 	private int userId;
+	private LoginMethod loginMethod;
+	private int skeyId;
 
 	private enum LoginMethod {
 		Username, Skey
 	}
-
-	private LoginMethod loginMethod;
-	private int skeyId;
 
 	public LoginMethod getLoginMethod() {
 		return loginMethod;
@@ -120,7 +108,7 @@ public class User {
 			}
 		} catch (SQLException e) {
 			if (DebugSign.DEBUG_SIGN)
-				throw new RuntimeException("Errors occurred when login", e);
+				throw new RuntimeException("An error occurred when logining.", e);
 			else
 				return new OperationResult(null, false, "Internal server error");
 		}
@@ -132,7 +120,7 @@ public class User {
 
 		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
 				PreparedStatement ps = dbconn.prepareStatement(
-						"SELECT `userSkeyId` FROM `userskey` WHERE `userId`=? AND `userSkeyUseage`='login' AND `userSkeySkey` = ? AND `userSkeyExprie`>CURRENT_TIMESTAMP");) {
+						"SELECT `userSkeyId` FROM `userskey` WHERE `userId`=? AND `userSkeySkey` = ? AND `userSkeyExprie`>CURRENT_TIMESTAMP");) {
 			ps.setInt(1, userId);
 			ps.setBytes(2, Util.HexString.hexStringToBytes(userSkey));
 			try (ResultSet result = ps.executeQuery();) {
@@ -152,7 +140,7 @@ public class User {
 			}
 		} catch (SQLException e) {
 			if (DebugSign.DEBUG_SIGN)
-				throw new RuntimeException("Errors occurred when login with skeys", e);
+				throw new RuntimeException("An error occurred when logining with skey", e);
 			else
 				return new OperationResult(null, false, "Internal server error");
 		}
@@ -164,7 +152,7 @@ public class User {
 
 		WriteUserOperation(userId, "Create skey", "Success", ip);
 
-		return SkeyGenerator.generateSkey(userId, "login");
+		return SkeyGenerator.generateSkey(userId);
 	}
 
 	public void logout(String ip) {
@@ -186,87 +174,23 @@ public class User {
 		userId = -1;
 	}
 
-	public void changePassword(String email) {
-		if (userId == -1 || !UserInfoPattern.checkEmailFormat(email))
-			return;
-
-		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
-				PreparedStatement ps = dbconn
-						.prepareStatement("SELECT `userId` FROM `user` WHERE `userId`=? AND `userEmail`=? LIMIT 1");) {
-			ps.setInt(1, userId);
-			ps.setString(2, email);
-
-			try (ResultSet result = ps.executeQuery();) {
-				if (result.first()) {
-					SkeyGenerator.sendEmailSkey(userId, "changepwd");
-				}
-			}
-		} catch (SQLException e) {
-			throw new RuntimeException("Errors occurred when login", e);
-		}
-	}
-
-	public static void changePassword(String userName, String email) {
-		if (!UserInfoPattern.checkUserNameFormat(userName) || !UserInfoPattern.checkEmailFormat(email))
-			return;
-
-		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
-				PreparedStatement ps = dbconn.prepareStatement(
-						"SELECT `userId` FROM `user` WHERE `userName`=? AND `userEmail`=? LIMIT 1");) {
-			ps.setString(1, userName);
-			ps.setString(2, email);
-
-			try (ResultSet result = ps.executeQuery();) {
-				if (result.first()) {
-					SkeyGenerator.sendEmailSkey(result.getInt(1), "changepwd");
-				}
-			}
-		} catch (SQLException e) {
-			throw new RuntimeException("Errors occurred when login", e);
-		}
-	}
-
-	public static boolean emailVerify(int userId, String skey, String purpose, String password) {
-		if (purpose.equals("emailcheck")) {
-		} else if (purpose.equals("changepwd") && UserInfoPattern.checkPasswordFormat(password)) {
-		} else
+	public static boolean changePassword(String userName, String oldPass, String newPass) {
+		if (!UserInfoPattern.checkUserNameFormat(userName) || !UserInfoPattern.checkPasswordFormat(oldPass)
+				|| !UserInfoPattern.checkPasswordFormat(newPass))
 			return false;
+		
+		byte[] oldSHA = Util.PasswordSHA.passwordSHA(oldPass);
+		byte[] newSHA = Util.PasswordSHA.passwordSHA(newPass);
 
 		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
 				PreparedStatement ps = dbconn.prepareStatement(
-						"SELECT FROM `userSkeyId` WHERE `userId`=? AND `userSkeyUseage`='login' AND `userSkeySkey` = ? AND `userSkeyExprie`>CURRENT_TIMESTAMP");) {
-			ps.setInt(1, userId);
-			ps.setBytes(2, Util.HexString.hexStringToBytes(skey));
-			try (ResultSet result = ps.executeQuery();) {
-				if (result.first()) {
-					if (purpose.equals("emailcheck")) {
-						try (PreparedStatement ps2 = dbconn
-								.prepareStatement("UPDATE `user` SET `userEmailCheck` = `yes` WHERE `userId` = ?");) {
-							ps2.setInt(1, userId);
-							ps2.executeUpdate();
-						}
-
-					} else if (purpose.equals("changepwd")) {
-						try (PreparedStatement ps2 = dbconn
-								.prepareStatement("UPDATE `user` SET `userPassword` = ? WHERE `userId` = ?");) {
-							ps2.setBytes(1, Util.PasswordSHA.passwordSHA(password));
-							ps2.setInt(2, userId);
-							ps2.executeUpdate();
-						}
-					}
-
-					try (PreparedStatement ps2 = dbconn
-							.prepareStatement("DELETE FROM `userskey` WHERE `userId` = ? AND `userSkeyUseage` = ?");) {
-						ps2.setInt(1, userId);
-						ps2.setString(2, purpose);
-						ps2.executeUpdate();
-					}
-					return true;
-				}
-				return false;
-			}
+						"UPDATE `user` SET `userPassword` = ? WHERE `userId` = ? AND `userPassword` = ?");) {
+			ps.setBytes(1, oldSHA);
+			ps.setString(2, userName);
+			ps.setBytes(3, newSHA);
+			return ps.executeUpdate() == 1;
 		} catch (SQLException e) {
-			throw new RuntimeException("Errors occurred when login with skeys", e);
+			throw new RuntimeException("An error occurred when changing password", e);
 		}
 	}
 
@@ -292,7 +216,7 @@ public class User {
 			return new OperationResult(null, false, "User name already exists");
 		} catch (SQLException e) {
 			if (DebugSign.DEBUG_SIGN)
-				throw new RuntimeException("Errors occurred when login with skeys", e);
+				throw new RuntimeException("An error occurred when registering", e);
 			else
 				return new OperationResult(null, false, "Internal server error");
 		}
@@ -314,6 +238,7 @@ public class User {
 			ps2.setString(4, ip);
 			ps2.executeUpdate();
 		} catch (SQLException e) {
+			throw new RuntimeException("An error occurred when writing operations", e);
 		}
 	}
 
@@ -337,10 +262,29 @@ public class User {
 				}
 			}
 		} catch (SQLException e) {
+			throw new RuntimeException("An error occurred when getting operations.", e);
 		}
 
 		if (result.size() == 0)
 			return new OperationInfo[0];
 		return result.toArray(new OperationInfo[0]);
+	}
+	
+	public boolean deleteUser(String password) {
+		if (!UserInfoPattern.checkPasswordFormat(password))
+			return false;
+
+		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
+				PreparedStatement ps = dbconn.prepareStatement(
+						"DELETE FROM `user` WHERE `userId`=? AND `userPassword`=?");) {
+			ps.setInt(1, userId);
+			ps.setBytes(2, Util.PasswordSHA.passwordSHA(password));
+			return 1 == ps.executeUpdate();
+		} catch (SQLException e) {
+			if (DebugSign.DEBUG_SIGN)
+				throw new RuntimeException("An error occurred when logining.", e);
+			else
+				return false;
+		}
 	}
 }

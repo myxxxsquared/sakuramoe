@@ -29,7 +29,7 @@
 <meta name="description" content="Sakuramoe">
 <meta name="author" content="Wenjie Zhang">
 <meta name="keyword" content="Sakuramoe">
-<!-- <link rel="shortcut icon" href="assets/ico/favicon.png"> -->
+<link rel="shortcut icon" href="assets/ico/favicon.png">
 
 <title>Sakuramoe</title>
 
@@ -87,7 +87,7 @@
 						class="fa fa-exchange"></i> Change password</a> <a
 						class="dropdown-item" href="delete-user.jsp"><i
 						class="fa fa-remove"></i> Delete user</a> <a class="dropdown-item"
-						href="action_logout.jsp"><i class="fa fa-lock"></i> Logout</a>
+						href="logout.jsp"><i class="fa fa-lock"></i> Logout</a>
 
 				</div></li>
 			<li class="nav-item d-md-down-none"></li>

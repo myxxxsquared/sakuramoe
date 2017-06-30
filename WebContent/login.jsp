@@ -1,4 +1,4 @@
-<%@page import="sakuramoe.Tools"%>
+<%@page import="sakuramoe.Util"%>
 <%@page import="sakuramoe.OperationResult"%>
 <%@page import="sakuramoe.Util.CookieReader"%>
 <%@page import="sakuramoe.User"%>
@@ -8,7 +8,7 @@
 <%
 	boolean jump_to_home = false;
 	String alert = null;
-	String ip = Tools.getRemortIP(request);
+	String ip = Util.getRemortIP(request);
 
 	if (session.getAttribute("user") == null) {
 		session.setAttribute("user", new User());
@@ -59,7 +59,7 @@
 %>
 <html lang="en">
 <head>
-<meta http-equiv="refresh" content="0;url=/home.jsp">
+<meta http-equiv="refresh" content="0;url=.">
 </head>
 </html>
 <%
@@ -77,7 +77,7 @@
 <meta name="description" content="Sakuramoe">
 <meta name="author" content="Wenjie Zhang">
 <meta name="keyword" content="Sakuramoe">
-<!-- <link rel="shortcut icon" href="assets/ico/favicon.png"> -->
+<link rel="shortcut icon" href="assets/ico/favicon.png">
 
 <title>Sakuramoe</title>
 
@@ -139,10 +139,7 @@
 									<div class="col-6">
 										<button type="submit" class="btn btn-primary px-4">Login</button>
 									</div>
-									<div class="col-6 text-right">
-										<button type="button" class="btn btn-link px-0">Forgot
-											password?</button>
-									</div>
+									
 								</div>
 							</form>
 						</div>

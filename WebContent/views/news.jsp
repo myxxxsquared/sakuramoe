@@ -1,4 +1,22 @@
-﻿<%@ page contentType="text/html; charset=utf-8" language="java"%>
+﻿<%@page import="sakuramoe.Post.PostInfo"%>
+<%@page import="java.util.List"%>
+<%@page import="sakuramoe.Post"%>
+<%@page import="sakuramoe.UserInfo"%>
+<%@page import="sakuramoe.User"%>
+<%@ page contentType="text/html; charset=utf-8" language="java"%>
+
+<%
+	if (session.getAttribute("user") == null) {
+		session.setAttribute("user", new User());
+	}
+	User user = (User) session.getAttribute("user");
+	if (!user.isLogin()) {
+		response.sendRedirect("login.jsp");
+		return;
+	}
+
+	List<Post> posts = Post.getNews(user.getUserId());
+%>
 
 <ol class="breadcrumb">
 	<li class="breadcrumb-item">Home</li>
@@ -7,39 +25,42 @@
 <div class="container-fluid">
 	<div class="animated fadeIn">
 		<div class="row">
+			<%
+				for (Post p : posts) {
+					PostInfo pi = p.getPostInfo();
+			%>
 			<div class="col-md-6">
 				<div class="card">
 					<div class="card-header">
 						<div class="float-left">
-							<img src="img/avatars/6.jpg" height="50em" class="img-avatar"
-								alt="admin@bootstrapmaster.com">
+							<img src="<%out.print(pi.userAvatar); %>" height="50em" class="img-avatar">
 						</div>
 						<div class="float-left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
 						<div class="float-left">
-							<b>Admin</b><br /> 1970-01-01 00:00
+							<b><%out.print(pi.userDesc); %></b><br /> <%out.print(pi.timePosted); %>
 						</div>
 					</div>
-					<div class="card-block">Lorem ipsum dolor sit amet,
-						consectetuer adipiscing elit, sed diam nonummy nibh euismod
-						tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi
-						enim ad minim veniam, quis nostrud exerci tation ullamcorper
-						suscipit lobortis nisl ut aliquip ex ea commodo consequat.</div>
+					<div class="card-block"><%out.print(pi.content); %></div>
 					<div class="card-footer">
 						<button type="button" class="btn btn-success btn-post-forward"
-							postid="1">
-							<i class="icon-action-redo"></i>&nbsp;Forward(<span liked="0">5</span>)
+							postid="<%out.print(pi.postID); %>">
+							<i class="icon-action-redo"></i>&nbsp;Forward
 						</button>
 						<button type="button" class="btn btn-success btn-post-like"
-							postid="1">
-							<i class="icon-like"></i>&nbsp;Like(<span liked="0">5</span>)
+							postid="<%out.print(pi.postID); %>">
+							<i class="icon-like"></i>&nbsp;Like(<span liked="<%out.print(p.like(user) ? "1" : "0");%>"><%out.print(p.getNumberLike());%></span>)
 						</button>
 						<button type="button" class="btn btn-success btn-post-more"
-							postid="1">
+							postid="<%out.print(pi.postID); %>">
 							<i class="icon-list"></i>&nbsp;More
 						</button>
 					</div>
 				</div>
 			</div>
+			<%
+				}
+			%>
+
 		</div>
 	</div>
 </div>

@@ -11,12 +11,11 @@ public class UserInfo {
 	public final String userName;
 	public final String userEmail;
 	public final Date userRegtime;
-	public final boolean userEmailCheck;
 
 	public UserInfo(int userId) {
 		try (Connection dbconn = DatabaseConnector.GetDatabaseConnection();
 				PreparedStatement ps = dbconn.prepareStatement(
-						"SELECT `userName`, `userEmail`, `userRegtime`, `userEmailCheck` FROM `user` WHERE `userId`=? LIMIT 1");) {
+						"SELECT `userName`, `userEmail`, `userRegtime` FROM `user` WHERE `userId`=? LIMIT 1");) {
 			ps.setInt(1, userId);
 			try (ResultSet result = ps.executeQuery();) {
 				result.first();
@@ -24,7 +23,6 @@ public class UserInfo {
 				this.userName = result.getString(1);
 				this.userEmail = result.getString(2);
 				this.userRegtime = new Date(result.getTimestamp(3).getTime());
-				this.userEmailCheck = result.getString(4).equals("yes");
 			}
 		} catch (SQLException e) {
 			throw new RuntimeException("Errors occurred when login", e);
